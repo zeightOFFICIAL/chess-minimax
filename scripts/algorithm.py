@@ -88,31 +88,28 @@ class Solution:
         def minimaxdepth2(original_color):
             max_value = -inf
             maxed_move = -1
-            new_board_1 = copy.deepcopy(self.board)
-            all_pieces_1 = get_all_pieces(new_board_1, original_color)
+            all_pieces_1 = get_all_pieces(self.board, original_color)
             for piece_1 in all_pieces_1:
                 for move_1 in piece_1.move_list:
-                    new_board_1 = copy.deepcopy(self.board)
-                    new_board_1.simple_move((piece_1.row, piece_1.col), (move_1[1], move_1[0]), original_color)
-                    if not new_board_1.piece_is_checked(original_color):
-                        all_pieces_2 = get_all_pieces(new_board_1, "w" if original_color == "b" else "b")
+                    after_my_move = copy.deepcopy(self.board)
+                    after_my_move.simple_move((piece_1.row, piece_1.col), (move_1[1], move_1[0]), original_color)
+                    if not after_my_move.piece_is_checked(original_color):
+                        opponent_color = "w" if original_color == "b" else "b"
+                        all_pieces_2 = get_all_pieces(after_my_move, opponent_color)
                         min_value = inf
                         for piece_2 in all_pieces_2:
                             for move_2 in piece_2.move_list:
-                                new_board_2 = copy.deepcopy(new_board_1)
-                                new_board_2.simple_move((piece_2.row, piece_2.col), (move_2[1], move_2[0]),
-                                                        "w" if original_color == "b" else "b")
-                                if evaluate_board_advanced(new_board_2, original_color) < min_value:
-                                    min_value = evaluate_board_advanced(new_board_2, original_color)
-                        total_value = evaluate_board_advanced(new_board_1, original_color) + min_value
-                        logging.debug("Minimax2: the best move by white, player has value %d", min_value)
-                        if total_value > max_value:
-                            max_value = total_value
+                                after_response = copy.deepcopy(after_my_move)
+                                after_response.simple_move((piece_2.row, piece_2.col), (move_2[1], move_2[0]),
+                                                           opponent_color)
+                                value = evaluate_board_advanced(after_response, original_color)
+                                if value < min_value:
+                                    min_value = value
+                        if min_value > max_value:
+                            max_value = min_value
                             maxed_move = (piece_1.row, piece_1.col), (move_1[0], move_1[1])
-            if self.evaluation == max_value:
-                logging.debug("Minimax2: the moves are arithmetically equal. -> random choice")
+            if maxed_move == -1:
                 return self.random_choice(original_color)
-            logging.debug("Minimax2: the best (most efficient) move for black has value of %d", max_value)
             return maxed_move
 
         was_checked = self.board.piece_is_checked(color)
@@ -156,27 +153,29 @@ class Solution:
         def minimax(board, depth, alpha, beta, maximizing):
             if depth == 0:
                 return evaluate_board_advanced(board, "b")
-            new_board_1 = copy.deepcopy(board)
+            current_color = "b" if maximizing else "w"
             if maximizing:
-                all_pieces_1 = get_all_pieces(new_board_1, "b")
+                all_pieces_1 = get_all_pieces(board, "b")
                 best_value_1 = -inf
                 for piece_1 in all_pieces_1:
                     for move_1 in piece_1.move_list:
-                        new_board_1 = copy.deepcopy(board)
-                        new_board_1.simple_move((piece_1.row, piece_1.col), (move_1[1], move_1[0]), color)
-                        best_value_1 = max(minimax(new_board_1, depth - 1, alpha, beta, not maximizing), best_value_1)
+                        child = copy.deepcopy(board)
+                        child.simple_move((piece_1.row, piece_1.col), (move_1[1], move_1[0]), current_color)
+                        value = minimax(child, depth - 1, alpha, beta, not maximizing)
+                        best_value_1 = max(value, best_value_1)
                         alpha = max(alpha, best_value_1)
                         if beta <= alpha:
                             return best_value_1
                 return best_value_1
             else:
-                all_pieces_1 = get_all_pieces(new_board_1, "w")
+                all_pieces_1 = get_all_pieces(board, "w")
                 best_value_1 = inf
                 for piece_1 in all_pieces_1:
                     for move_1 in piece_1.move_list:
-                        new_board_1 = copy.deepcopy(board)
-                        new_board_1.simple_move((piece_1.row, piece_1.col), (move_1[1], move_1[0]), color)
-                        best_value_1 = min(minimax(new_board_1, depth - 1, alpha, beta, not maximizing), best_value_1)
+                        child = copy.deepcopy(board)
+                        child.simple_move((piece_1.row, piece_1.col), (move_1[1], move_1[0]), current_color)
+                        value = minimax(child, depth - 1, alpha, beta, not maximizing)
+                        best_value_1 = min(value, best_value_1)
                         beta = min(beta, best_value_1)
                         if beta <= alpha:
                             return best_value_1
