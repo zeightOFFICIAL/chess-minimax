@@ -9,7 +9,12 @@ Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 
 # libraries ============================================================================================================
 from configuration.flowingconfig import *
-from gameobjects.piece import Bishop, King, Knight, Rook, Queen, Pawn
+from gameobjects.bishop import Bishop
+from gameobjects.king import King
+from gameobjects.knight import Knight
+from gameobjects.rook import Rook
+from gameobjects.queen import Queen
+from gameobjects.pawn import Pawn
 
 
 # chessboard class =====================================================================================================
@@ -151,7 +156,7 @@ class Board:
         new_board[point_from[0]][point_from[1]] = 0
         self.board = new_board
         # this code is so arranged that you cannot intentionally place your king under check, yet you may still miss the
-        # the upcoming checkmate if you didn't not avoid the check in the previous turn.
+        #  upcoming checkmate if you didn't avoid the check in the previous turn.
         if self.piece_is_checked(color) and not (checked_before and self.piece_is_checked(color)):
             changed = False
             new_board = self.board[:]

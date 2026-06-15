@@ -23,7 +23,7 @@ else:
 # rate of screen update [should not be changed] ------------------------------------------------------------------------
 FPS_MAX = 24
 
-# window width and height [changeable, adjustible] ---------------------------------------------------------------------
+# window width and height [changeable, adjustable] ---------------------------------------------------------------------
 # if auto-detection works - its height=width is equal to display height minus 90
 width = 600
 try:
