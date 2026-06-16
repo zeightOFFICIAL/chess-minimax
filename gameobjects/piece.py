@@ -5,6 +5,7 @@ Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 
 # ver 917
 # piece.py
+# Convention: move_list entries are (row, col) matching board[row][col]
 
 
 # libraries ============================================================================================================
@@ -89,8 +90,8 @@ class Piece:
         if self.selected:
             moves = self.move_list
             for move in moves:
-                x = self.start_x + (move[0] * BOTTOM_RIGHT[0] / 8) + (CELL_SIZE_Y // 2)
-                y = self.start_y + (move[1] * BOTTOM_RIGHT[1] / 8) + (CELL_SIZE_Y // 2)
+                x = self.start_x + (move[1] * BOTTOM_RIGHT[0] / 8) + (CELL_SIZE_Y // 2)
+                y = self.start_y + (move[0] * BOTTOM_RIGHT[1] / 8) + (CELL_SIZE_Y // 2)
                 if self.color == "w":
                     win.blit(scaled_select, (x - CELL_SIZE_X / 2, y - CELL_SIZE_Y / 2))
                 if self.color == 'b':

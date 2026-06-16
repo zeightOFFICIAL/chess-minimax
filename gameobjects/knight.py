@@ -19,49 +19,49 @@ class Knight(Piece):
         if to_row < 6 and to_col > 0:
             next_point = board[to_row + 2][to_col - 1]
             if next_point == 0:
-                moves.append((to_col - 1, to_row + 2))
+                moves.append((to_row + 2, to_col - 1))
             elif next_point.color != self.color:
-                moves.append((to_col - 1, to_row + 2))
+                moves.append((to_row + 2, to_col - 1))
         if to_row > 1 and to_col > 0:
             next_point = board[to_row - 2][to_col - 1]
             if next_point == 0:
-                moves.append((to_col - 1, to_row - 2))
+                moves.append((to_row - 2, to_col - 1))
             elif next_point.color != self.color:
-                moves.append((to_col - 1, to_row - 2))
+                moves.append((to_row - 2, to_col - 1))
         if to_row < 6 and to_col < 7:
             next_point = board[to_row + 2][to_col + 1]
             if next_point == 0:
-                moves.append((to_col + 1, to_row + 2))
+                moves.append((to_row + 2, to_col + 1))
             elif next_point.color != self.color:
-                moves.append((to_col + 1, to_row + 2))
+                moves.append((to_row + 2, to_col + 1))
         if to_row > 1 and to_col < 7:
             next_point = board[to_row - 2][to_col + 1]
             if next_point == 0:
-                moves.append((to_col + 1, to_row - 2))
+                moves.append((to_row - 2, to_col + 1))
             elif next_point.color != self.color:
-                moves.append((to_col + 1, to_row - 2))
+                moves.append((to_row - 2, to_col + 1))
         if to_row > 0 and to_col > 1:
             next_point = board[to_row - 1][to_col - 2]
             if next_point == 0:
-                moves.append((to_col - 2, to_row - 1))
+                moves.append((to_row - 1, to_col - 2))
             elif next_point.color != self.color:
-                moves.append((to_col - 2, to_row - 1))
+                moves.append((to_row - 1, to_col - 2))
         if to_row > 0 and to_col < 6:
             next_point = board[to_row - 1][to_col + 2]
             if next_point == 0:
-                moves.append((to_col + 2, to_row - 1))
+                moves.append((to_row - 1, to_col + 2))
             elif next_point.color != self.color:
-                moves.append((to_col + 2, to_row - 1))
+                moves.append((to_row - 1, to_col + 2))
         if to_row < 7 and to_col > 1:
             next_point = board[to_row + 1][to_col - 2]
             if next_point == 0:
-                moves.append((to_col - 2, to_row + 1))
+                moves.append((to_row + 1, to_col - 2))
             elif next_point.color != self.color:
-                moves.append((to_col - 2, to_row + 1))
+                moves.append((to_row + 1, to_col - 2))
         if to_row < 7 and to_col < 6:
             next_point = board[to_row + 1][to_col + 2]
             if next_point == 0:
-                moves.append((to_col + 2, to_row + 1))
+                moves.append((to_row + 1, to_col + 2))
             elif next_point.color != self.color:
-                moves.append((to_col + 2, to_row + 1))
+                moves.append((to_row + 1, to_col + 2))
         return moves

@@ -16,6 +16,8 @@ from gameobjects.rook import Rook
 from gameobjects.queen import Queen
 from gameobjects.pawn import Pawn
 
+# Convention: move_list entries are (row, col) matching board[row][col]
+
 
 # chessboard class =====================================================================================================
 # noinspection PyTypeChecker
@@ -99,7 +101,7 @@ class Board:
             for col_index in range(self.cols):
                 if self.board[row_index][col_index] != 0:
                     if self.board[row_index][col_index].king and self.board[row_index][col_index].color == color:
-                        king_pos = (col_index, row_index)
+                        king_pos = (row_index, col_index)
         if king_pos in danger_moves:
             logging.debug("Checked: %s-king is under check at (%d, %d)", color, king_pos[0], king_pos[1])
             return True
@@ -115,7 +117,7 @@ class Board:
                         previous_select = (row_index, col_index)
         if self.board[row][col] == 0 and previous_select != (-1, -1):
             moves = self.board[previous_select[0]][previous_select[1]].move_list
-            if (col, row) in moves:
+            if (row, col) in moves:
                 changed = self.move(previous_select, (row, col), color)
             self.reset_selected()
         else:
@@ -126,7 +128,7 @@ class Board:
             else:
                 if self.board[previous_select[0]][previous_select[1]].color != self.board[row][col].color:
                     moves = self.board[previous_select[0]][previous_select[1]].move_list
-                    if (col, row) in moves:
+                    if (row, col) in moves:
                         changed = self.move(previous_select, (row, col), color)
                     self.reset_selected()
                     if self.board[row][col].color == color:
@@ -147,7 +149,7 @@ class Board:
     def move(self, point_from, point_to, color):
         checked_before = self.piece_is_checked(color)
         changed = True
-        new_board = self.board[:]
+        new_board = [row[:] for row in self.board]
         if new_board[point_from[0]][point_from[1]].pawn:
             new_board[point_from[0]][point_from[1]].first = False
         prev_figure_dst = new_board[point_to[0]][point_to[1]]
@@ -159,7 +161,7 @@ class Board:
         #  upcoming checkmate if you didn't avoid the check in the previous turn.
         if self.piece_is_checked(color) and not (checked_before and self.piece_is_checked(color)):
             changed = False
-            new_board = self.board[:]
+            new_board = [row[:] for row in self.board]
             new_board[point_to[0]][point_to[1]].change_pos((point_from[0], point_from[1]))
             if new_board[point_to[0]][point_to[1]].pawn:
                 new_board[point_to[0]][point_to[1]].first = True
@@ -177,7 +179,7 @@ class Board:
 
     # 'move' for chess algorithm ---------------------------------------------------------------------------------------
     def simple_move(self, point_from, point_to, color):
-        new_board = self.board[:]
+        new_board = [row[:] for row in self.board]
         if new_board[point_from[0]][point_from[1]].pawn:
             new_board[point_from[0]][point_from[1]].first = False
         new_board[point_from[0]][point_from[1]].change_pos((point_to[0], point_to[1]))

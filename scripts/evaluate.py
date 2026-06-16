@@ -105,3 +105,13 @@ def evaluate_board(board, color):
                 else:
                     white_score += val
     return white_score - black_score if color == "w" else black_score - white_score
+
+
+def mvv_lva_score(board, from_pos, to_pos):
+    from_row, from_col = from_pos
+    to_row, to_col = to_pos
+    attacker = board.board[from_row][from_col]
+    victim = board.board[to_row][to_col]
+    if victim == 0:
+        return -1
+    return _MATERIAL[victim.piece_img] - 0.1 * _MATERIAL[attacker.piece_img]

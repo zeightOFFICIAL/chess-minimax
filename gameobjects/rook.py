@@ -19,36 +19,36 @@ class Rook(Piece):
         for x in range(to_row - 1, -1, -1):
             next_point = board[x][to_col]
             if next_point == 0:
-                moves.append((to_col, x))
+                moves.append((x, to_col))
             elif next_point.color != self.color:
-                moves.append((to_col, x))
+                moves.append((x, to_col))
                 break
             else:
                 break
         for x in range(to_row + 1, 8, 1):
             next_point = board[x][to_col]
             if next_point == 0:
-                moves.append((to_col, x))
+                moves.append((x, to_col))
             elif next_point.color != self.color:
-                moves.append((to_col, x))
+                moves.append((x, to_col))
                 break
             else:
                 break
         for x in range(to_col - 1, -1, -1):
             next_point = board[to_row][x]
             if next_point == 0:
-                moves.append((x, to_row))
+                moves.append((to_row, x))
             elif next_point.color != self.color:
-                moves.append((x, to_row))
+                moves.append((to_row, x))
                 break
             else:
                 break
         for x in range(to_col + 1, 8, 1):
             next_point = board[to_row][x]
             if next_point == 0:
-                moves.append((x, to_row))
+                moves.append((to_row, x))
             elif next_point.color != self.color:
-                moves.append((x, to_row))
+                moves.append((to_row, x))
                 break
             else:
                 break

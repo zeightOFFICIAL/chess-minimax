@@ -226,7 +226,7 @@ def main():
                         # end = timer()
                         # print(end - start)
                     game_board.simple_move(
-                        (piecex, piecey), (choice[1], choice[0]), "b")
+                        (piecex, piecey), choice, "b")
                     change = True
                 except TypeError:
                     logging.warning("Main: Type error. White wins. It's either critical script failure or true winning "

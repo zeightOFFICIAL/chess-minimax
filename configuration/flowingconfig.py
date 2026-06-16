@@ -67,7 +67,16 @@ try:
         var_name = str(line.split("=")[0])
         if var_name in ["game_mode", "difficulty", "visual_set", "freeze_time", "time_restriction"]:
             var_value = int(line.split("=")[1])
-            locals()[var_name] = var_value
+            if var_name == "game_mode":
+                game_mode = var_value
+            elif var_name == "difficulty":
+                difficulty = var_value
+            elif var_name == "visual_set":
+                visual_set = var_value
+            elif var_name == "freeze_time":
+                freeze_time = var_value
+            elif var_name == "time_restriction":
+                time_restriction = var_value
             logging.debug("Reading config: Assign value %d to parameter %s", var_value, var_name)
 except (FileExistsError, AttributeError, ValueError, FileNotFoundError) as e:
     logging.warning("Reading config: Config file is corrupted, does not exist or is unreadable, possibly parsing error."

@@ -22,9 +22,9 @@ class Bishop(Piece):
             if left_strafe < 8:
                 next_point = board[distance][left_strafe]
                 if next_point == 0:
-                    moves.append((left_strafe, distance))
+                    moves.append((distance, left_strafe))
                 elif next_point.color != self.color:
-                    moves.append((left_strafe, distance))
+                    moves.append((distance, left_strafe))
                     break
                 else:
                     break
@@ -35,9 +35,9 @@ class Bishop(Piece):
             if right_strafe > -1:
                 next_point = board[distance][right_strafe]
                 if next_point == 0:
-                    moves.append((right_strafe, distance))
+                    moves.append((distance, right_strafe))
                 elif next_point.color != self.color:
-                    moves.append((right_strafe, distance))
+                    moves.append((distance, right_strafe))
                     break
                 else:
                     break
@@ -50,9 +50,9 @@ class Bishop(Piece):
             if left_strafe < 8:
                 next_point = board[distance][left_strafe]
                 if next_point == 0:
-                    moves.append((left_strafe, distance))
+                    moves.append((distance, left_strafe))
                 elif next_point.color != self.color:
-                    moves.append((left_strafe, distance))
+                    moves.append((distance, left_strafe))
                     break
                 else:
                     break
@@ -63,9 +63,9 @@ class Bishop(Piece):
             if right_strafe > -1:
                 next_point = board[distance][right_strafe]
                 if next_point == 0:
-                    moves.append((right_strafe, distance))
+                    moves.append((distance, right_strafe))
                 elif next_point.color != self.color:
-                    moves.append((right_strafe, distance))
+                    moves.append((distance, right_strafe))
                     break
                 else:
                     break
