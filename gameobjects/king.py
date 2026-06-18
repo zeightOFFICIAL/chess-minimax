@@ -3,7 +3,7 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# ver 917
+# ver 926
 # king.py
 
 from gameobjects.piece import Piece

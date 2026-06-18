@@ -40,6 +40,7 @@ def minimax(board, depth, alpha, beta, maximizing, tt=None, z_hash=None, root_co
         return evaluate_board_advanced(board, root_color)
     current_color = root_color if maximizing else ("w" if root_color == "b" else "b")
     alpha_orig = alpha
+    beta_orig = beta
 
     if tt is not None and z_hash is not None:
         key = (z_hash, depth, maximizing)
@@ -82,7 +83,7 @@ def minimax(board, depth, alpha, beta, maximizing, tt=None, z_hash=None, root_co
             flag = EXACT
             if best <= alpha_orig:
                 flag = UPPERBOUND
-            elif best >= beta:
+            elif best >= beta_orig:
                 flag = LOWERBOUND
             key = (z_hash, depth, maximizing)
             tt[key] = TTEntry(best, depth, flag)
@@ -108,8 +109,10 @@ def minimax(board, depth, alpha, beta, maximizing, tt=None, z_hash=None, root_co
                 break
         if tt is not None and z_hash is not None:
             flag = EXACT
-            if best <= alpha:
+            if best <= alpha_orig:
                 flag = UPPERBOUND
+            elif best >= beta_orig:
+                flag = LOWERBOUND
             key = (z_hash, depth, maximizing)
             tt[key] = TTEntry(best, depth, flag)
             if len(tt) >= 1000000:
@@ -119,9 +122,9 @@ def minimax(board, depth, alpha, beta, maximizing, tt=None, z_hash=None, root_co
 
 # class for algorithmic solution =======================================================================================
 class Solution:
-    def __init__(self, board):
+    def __init__(self, board, color):
         self.board = board
-        self.evaluation = evaluate_board(self.board, "b")
+        self.evaluation = evaluate_board(self.board, color)
 
     # diff. 0 random choice --------------------------------------------------------------------------------------------
     def random_choice(self, color):
@@ -212,11 +215,16 @@ class Solution:
             candidates.sort(key=lambda x: x[0], reverse=True)
             best_value = -inf
             best_move = self.random_choice(color)
+            tt = {}
+            root_hash = zobrist.hash_board(self.board.board)
             for score, piece, move in candidates:
+                from_sq = piece.row * 8 + piece.col
+                to_sq = move[0] * 8 + move[1]
+                child_hash = zobrist.hash_after_move(root_hash, self.board.board, from_sq, to_sq)
                 child = copy.deepcopy(self.board)
                 child.simple_move((piece.row, piece.col), move, color)
                 if not child.piece_is_checked(color):
-                    value = minimax(child, 1, -inf, inf, False, root_color=color)
+                    value = minimax(child, 1, -inf, inf, False, tt, child_hash, color)
                     if value > best_value:
                         best_value = value
                         best_move = (piece.row, piece.col), move

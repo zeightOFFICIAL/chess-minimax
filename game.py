@@ -3,7 +3,7 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# ver 917/918 with time stamps commented
+# ver 926
 # game.py
 
 
@@ -204,7 +204,7 @@ def main():
                     end_screen("Black Wins!", time() - start_time)
                     logging.debug("Main: Black wins. White ended its turn with checked king. At turn: %d", turn_number)
                 change = False
-                solve = Solution(game_board)
+                solve = Solution(game_board, turn_color)
                 try:
                     # start = timer()
                     (piecex, piecey), choice = solve.random_choice(turn_color)

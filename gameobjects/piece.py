@@ -3,9 +3,8 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# ver 917
+# ver 926
 # piece.py
-# Convention: move_list entries are (row, col) matching board[row][col]
 
 
 # libraries ============================================================================================================

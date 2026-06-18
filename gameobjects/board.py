@@ -3,7 +3,7 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# ver 918
+# ver 926
 # board.py
 
 
@@ -16,13 +16,8 @@ from gameobjects.rook import Rook
 from gameobjects.queen import Queen
 from gameobjects.pawn import Pawn
 
-# Convention: move_list entries are (row, col) matching board[row][col]
-
 
 # chessboard class =====================================================================================================
-# noinspection PyTypeChecker
-# (PyCharm throws a warning considering unexpected value in 2d array. Class instead of '0' being integer)
-
 class Board:
     def __init__(self, rows, cols):
         self.rows = rows

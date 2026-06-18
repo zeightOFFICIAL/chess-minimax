@@ -3,7 +3,7 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# ver 917
+# ver 926
 # flowingconfig.py
 
 
@@ -85,7 +85,7 @@ except (FileExistsError, AttributeError, ValueError, FileNotFoundError) as e:
 # check values for logical errors ======================================================================================
 time_restriction = 15 if (time_restriction > 60000) or (
         time_restriction < 0.5) else time_restriction
-game_mode = 0 if (game_mode != 0 and not 1) else game_mode
+game_mode = 0 if game_mode not in (0, 1) else game_mode
 difficulty = 0 if (difficulty > 3) or (difficulty < 0) else difficulty
 freeze_time = 5 if (freeze_time > 10) or (freeze_time < 0) else freeze_time
 

@@ -3,7 +3,7 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# ver 917
+# ver 926
 # pawn.py
 
 from gameobjects.piece import Piece
@@ -42,8 +42,6 @@ class Pawn(Piece):
                     if to_row < 6:
                         next_point = board[to_row + 2][to_col]
                         next_point_two = board[to_row + 1][to_col]
-                        if next_point_two == 0:
-                            moves.append((to_row + 1, to_col))
                         if next_point == 0 and next_point_two == 0:
                             moves.append((to_row + 2, to_col))
             else:
@@ -65,8 +63,6 @@ class Pawn(Piece):
                     if to_row > 1:
                         next_point = board[to_row - 2][to_col]
                         next_point_two = board[to_row - 1][to_col]
-                        if next_point_two == 0:
-                            moves.append((to_row - 1, to_col))
                         if next_point == 0 and next_point_two == 0:
                             moves.append((to_row - 2, to_col))
         except IndexError as e:
