@@ -9,6 +9,10 @@ Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 
 # libraries ============================================================================================================
 import pygame
+import sys, os
+
+if getattr(sys, 'frozen', False):
+    os.chdir(sys._MEIPASS)
 
 # resources ============================================================================================================
 from configuration.flowingconfig import *

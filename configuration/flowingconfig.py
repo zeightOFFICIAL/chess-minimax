@@ -8,6 +8,12 @@ Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 
 
 import logging
+import sys, os
+
+if getattr(sys, 'frozen', False):
+    _config_dir = os.path.dirname(sys.executable)
+else:
+    _config_dir = "."
 
 # libraries ============================================================================================================
 from screeninfo import get_monitors
@@ -29,7 +35,7 @@ width = 600
 try:
     for display in get_monitors():
         if display.is_primary:
-            width = display.height - 90
+            width = display.height - 110
             logging.debug("Auto-detection of screen height: Detected screen height: %d", width)
 except:
     logging.debug("Auto-detection of screen height: Screen's height auto-detection failed. Applying default: 600")
@@ -61,7 +67,7 @@ freeze_time = 3
 
 # reading from file ====================================================================================================
 try:
-    config_file = open("config.txt")
+    config_file = open(os.path.join(_config_dir, "config.txt"))
     lines = config_file.readlines()
     for line in lines:
         var_name = str(line.split("=")[0])
