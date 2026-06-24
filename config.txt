@@ -1,5 +1,5 @@
 game_mode=1
 difficulty=3
-visual_set=0
+visual_set=1
 time_restriction=15
 freeze_time=3

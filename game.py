@@ -11,6 +11,7 @@ Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 from sys import exit
 from time import time
 from timeit import default_timer as timer
+import os
 
 import pygame
 
@@ -20,13 +21,18 @@ from gameobjects.board import Board
 from scripts.algorithm import Solution
 
 # resources ============================================================================================================
-raw_board = pygame.image.load("resources/images/eq_chessboard.png")
+_BASE = "resources/images"
+raw_board = pygame.image.load(f"{_BASE}/eq_chessboard.png")
 icon = pygame.image.load("resources/icons/icon.png")
 if visual_set != 0:
-    try:
-        raw_board = pygame.image.load("resources/images/" + str(visual_set) + "/eq_chessboard.png")
-    except (FileNotFoundError, FileExistsError) as e:
-        logging.warning("Resources loading: Custom visual set cannot be loaded. Partly or entirely.")
+    _board_path = f"{_BASE}/{visual_set}/eq_chessboard.png"
+    if os.path.exists(_board_path):
+        try:
+            raw_board = pygame.image.load(_board_path)
+        except (FileNotFoundError, TypeError) as e:
+            logging.warning("Load visual set %s: board image missing, using default", visual_set)
+    else:
+        logging.warning("Load visual set %s: board image not found, using default", visual_set)
 scaled_board = pygame.transform.smoothscale(raw_board, (width - PADDING_ABSOLUTE, HEIGHT - PADDING_ABSOLUTE))
 
 # setting up fonts =====================================================================================================

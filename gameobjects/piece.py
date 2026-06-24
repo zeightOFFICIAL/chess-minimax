@@ -17,38 +17,48 @@ if getattr(sys, 'frozen', False):
 # resources ============================================================================================================
 from configuration.flowingconfig import *
 
-b_bishop = pygame.image.load("resources/images/b_bishop.png")
-b_king = pygame.image.load("resources/images/b_king.png")
-b_knight = pygame.image.load("resources/images/b_knight.png")
-b_pawn = pygame.image.load("resources/images/b_pawn.png")
-b_queen = pygame.image.load("resources/images/b_queen.png")
-b_rook = pygame.image.load("resources/images/b_rook.png")
-w_bishop = pygame.image.load("resources/images/w_bishop.png")
-w_king = pygame.image.load("resources/images/w_king.png")
-w_knight = pygame.image.load("resources/images/w_knight.png")
-w_pawn = pygame.image.load("resources/images/w_pawn.png")
-w_queen = pygame.image.load("resources/images/w_queen.png")
-w_rook = pygame.image.load("resources/images/w_rook.png")
-raw_select = pygame.image.load("resources/images/b_select.png")
-raw_select_inv = pygame.image.load("resources/images/b2_select.png")
+_BASE = "resources/images"
+b_bishop = pygame.image.load(f"{_BASE}/b_bishop.png")
+b_king = pygame.image.load(f"{_BASE}/b_king.png")
+b_knight = pygame.image.load(f"{_BASE}/b_knight.png")
+b_pawn = pygame.image.load(f"{_BASE}/b_pawn.png")
+b_queen = pygame.image.load(f"{_BASE}/b_queen.png")
+b_rook = pygame.image.load(f"{_BASE}/b_rook.png")
+w_bishop = pygame.image.load(f"{_BASE}/w_bishop.png")
+w_king = pygame.image.load(f"{_BASE}/w_king.png")
+w_knight = pygame.image.load(f"{_BASE}/w_knight.png")
+w_pawn = pygame.image.load(f"{_BASE}/w_pawn.png")
+w_queen = pygame.image.load(f"{_BASE}/w_queen.png")
+w_rook = pygame.image.load(f"{_BASE}/w_rook.png")
+raw_select = pygame.image.load(f"{_BASE}/b_select.png")
+raw_select_inv = pygame.image.load(f"{_BASE}/b2_select.png")
 if visual_set != 0:
-    try:
-        b_bishop = pygame.image.load("resources/images/" + str(visual_set) + "/b_bishop.png")
-        b_king = pygame.image.load("resources/images/" + str(visual_set) + "/b_king.png")
-        b_knight = pygame.image.load("resources/images/" + str(visual_set) + "/b_knight.png")
-        b_pawn = pygame.image.load("resources/images/" + str(visual_set) + "/b_pawn.png")
-        b_queen = pygame.image.load("resources/images/" + str(visual_set) + "/b_queen.png")
-        b_rook = pygame.image.load("resources/images/" + str(visual_set) + "/b_rook.png")
-        w_bishop = pygame.image.load("resources/images/" + str(visual_set) + "/w_bishop.png")
-        w_king = pygame.image.load("resources/images/" + str(visual_set) + "/w_king.png")
-        w_knight = pygame.image.load("resources/images/" + str(visual_set) + "/w_knight.png")
-        w_pawn = pygame.image.load("resources/images/" + str(visual_set) + "/w_pawn.png")
-        w_queen = pygame.image.load("resources/images/" + str(visual_set) + "/w_queen.png")
-        w_rook = pygame.image.load("resources/images/" + str(visual_set) + "/w_rook.png")
-        raw_select = pygame.image.load("resources/images/" + str(visual_set) + "/b_select.png")
-        raw_select_inv = pygame.image.load("resources/images/" + str(visual_set) + "/b2_select.png")
-    except (FileNotFoundError, FileExistsError, TypeError) as e:
-        logging.debug("Load visual set: custom visual set cannot be loaded")
+    _set_path = f"{_BASE}/{visual_set}"
+    if os.path.isdir(_set_path):
+        try:
+            _b_bishop = pygame.image.load(f"{_set_path}/b_bishop.png")
+            _b_king = pygame.image.load(f"{_set_path}/b_king.png")
+            _b_knight = pygame.image.load(f"{_set_path}/b_knight.png")
+            _b_pawn = pygame.image.load(f"{_set_path}/b_pawn.png")
+            _b_queen = pygame.image.load(f"{_set_path}/b_queen.png")
+            _b_rook = pygame.image.load(f"{_set_path}/b_rook.png")
+            _w_bishop = pygame.image.load(f"{_set_path}/w_bishop.png")
+            _w_king = pygame.image.load(f"{_set_path}/w_king.png")
+            _w_knight = pygame.image.load(f"{_set_path}/w_knight.png")
+            _w_pawn = pygame.image.load(f"{_set_path}/w_pawn.png")
+            _w_queen = pygame.image.load(f"{_set_path}/w_queen.png")
+            _w_rook = pygame.image.load(f"{_set_path}/w_rook.png")
+            _raw_select = pygame.image.load(f"{_set_path}/b_select.png")
+            _raw_select_inv = pygame.image.load(f"{_set_path}/b2_select.png")
+            b_bishop, b_king, b_knight, b_pawn, b_queen, b_rook = (
+                _b_bishop, _b_king, _b_knight, _b_pawn, _b_queen, _b_rook)
+            w_bishop, w_king, w_knight, w_pawn, w_queen, w_rook = (
+                _w_bishop, _w_king, _w_knight, _w_pawn, _w_queen, _w_rook)
+            raw_select, raw_select_inv = _raw_select, _raw_select_inv
+        except (FileNotFoundError, TypeError) as e:
+            logging.warning("Load visual set %s: missing files, using defaults", visual_set)
+    else:
+        logging.warning("Load visual set %s: folder not found, using defaults", visual_set)
 black_all_images = [b_bishop, b_king, b_knight, b_pawn, b_queen, b_rook]
 white_all_images = [w_bishop, w_king, w_knight, w_pawn, w_queen, w_rook]
 black_all_scaled = []
