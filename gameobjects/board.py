@@ -23,6 +23,7 @@ class Board:
         self.rows = rows
         self.cols = cols
         self.board = [[0 for _ in range(8)] for _ in range(8)]
+        self.en_passant_target = None
         self.set_start_normal()
 
     def set_start_normal(self):
@@ -54,6 +55,7 @@ class Board:
         for row_index in range(self.rows):
             for col_index in range(self.cols):
                 if self.board[row_index][col_index] != 0:
+                    self.board[row_index][col_index].en_passant_target = self.en_passant_target
                     self.board[row_index][col_index].update_valid_moves(self.board)
 
     def draw(self, win):
@@ -145,15 +147,37 @@ class Board:
         checked_before = self.piece_is_checked(color)
         changed = True
         new_board = [row[:] for row in self.board]
-        if new_board[point_from[0]][point_from[1]].pawn:
-            new_board[point_from[0]][point_from[1]].first = False
+        moving_piece = new_board[point_from[0]][point_from[1]]
+
+        # Detect en passant capture
+        en_passant_capture = False
+        captured_pawn_pos = None
+        captured_pawn_obj = None
+        if moving_piece.pawn and self.en_passant_target is not None and point_to == self.en_passant_target:
+            en_passant_capture = True
+            captured_pawn_pos = (point_from[0], point_to[1])
+            captured_pawn_obj = new_board[captured_pawn_pos[0]][captured_pawn_pos[1]]
+
+        # Determine next en passant target (double push)
+        new_en_passant_target = None
+        if moving_piece.pawn:
+            moving_piece.first = False
+            if abs(point_to[0] - point_from[0]) == 2:
+                new_en_passant_target = ((point_from[0] + point_to[0]) // 2, point_from[1])
+
         prev_figure_dst = new_board[point_to[0]][point_to[1]]
-        new_board[point_from[0]][point_from[1]].change_pos((point_to[0], point_to[1]))
-        new_board[point_to[0]][point_to[1]] = new_board[point_from[0]][point_from[1]]
+        moving_piece.change_pos((point_to[0], point_to[1]))
+        new_board[point_to[0]][point_to[1]] = moving_piece
         new_board[point_from[0]][point_from[1]] = 0
+
+        if en_passant_capture:
+            new_board[captured_pawn_pos[0]][captured_pawn_pos[1]] = 0
+
+        old_en_passant_target = self.en_passant_target
+        self.en_passant_target = new_en_passant_target
         self.board = new_board
-        # this code is so arranged that you cannot intentionally place your king under check, yet you may still miss the
-        #  upcoming checkmate if you didn't avoid the check in the previous turn.
+
+        # cannot intentionally place your king under check
         if self.piece_is_checked(color) and not (checked_before and self.piece_is_checked(color)):
             changed = False
             new_board = [row[:] for row in self.board]
@@ -162,9 +186,10 @@ class Board:
                 new_board[point_to[0]][point_to[1]].first = True
             new_board[point_to[0]][point_to[1]].change_pos((point_from[0], point_from[1]))
             new_board[point_from[0]][point_from[1]] = new_board[point_to[0]][point_to[1]]
-            # king bug fix instead of 0 changed to 
-            # object that was there previously (prev_figure_dst)
-            new_board[point_to[0]][point_to[1]] = prev_figure_dst 
+            new_board[point_to[0]][point_to[1]] = prev_figure_dst
+            if en_passant_capture and captured_pawn_obj is not None:
+                new_board[captured_pawn_pos[0]][captured_pawn_pos[1]] = captured_pawn_obj
+            self.en_passant_target = old_en_passant_target
             self.board = new_board
         else:
             self.reset_selected()
@@ -175,11 +200,24 @@ class Board:
     # 'move' for chess algorithm ---------------------------------------------------------------------------------------
     def simple_move(self, point_from, point_to, color):
         new_board = [row[:] for row in self.board]
-        if new_board[point_from[0]][point_from[1]].pawn:
-            new_board[point_from[0]][point_from[1]].first = False
-        new_board[point_from[0]][point_from[1]].change_pos((point_to[0], point_to[1]))
-        new_board[point_to[0]][point_to[1]] = new_board[point_from[0]][point_from[1]]
+        moving_piece = new_board[point_from[0]][point_from[1]]
+
+        # Detect en passant capture
+        if moving_piece.pawn and self.en_passant_target is not None and point_to == self.en_passant_target:
+            captured_pos = (point_from[0], point_to[1])
+            new_board[captured_pos[0]][captured_pos[1]] = 0
+
+        if moving_piece.pawn:
+            moving_piece.first = False
+
+        new_en_passant_target = None
+        if moving_piece.pawn and abs(point_to[0] - point_from[0]) == 2:
+            new_en_passant_target = ((point_from[0] + point_to[0]) // 2, point_from[1])
+
+        moving_piece.change_pos((point_to[0], point_to[1]))
+        new_board[point_to[0]][point_to[1]] = moving_piece
         new_board[point_from[0]][point_from[1]] = 0
+        self.en_passant_target = new_en_passant_target
         self.board = new_board
         self.piece_at_the_end(color)
         self.update_moves()

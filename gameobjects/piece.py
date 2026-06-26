@@ -88,6 +88,7 @@ class Piece:
         self.king = False
         self.pawn = False
         self.queen = False
+        self.en_passant_target = None
 
     def is_selected(self):
         return self.selected

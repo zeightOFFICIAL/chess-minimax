@@ -44,6 +44,12 @@ class Pawn(Piece):
                         next_point_two = board[to_row + 1][to_col]
                         if next_point == 0 and next_point_two == 0:
                             moves.append((to_row + 2, to_col))
+                # En passant for black
+                if self.en_passant_target is not None and to_row == 4:
+                    if to_col < 7 and self.en_passant_target == (to_row + 1, to_col + 1):
+                        moves.append(self.en_passant_target)
+                    if to_col > 0 and self.en_passant_target == (to_row + 1, to_col - 1):
+                        moves.append(self.en_passant_target)
             else:
                 if to_row > 0:
                     next_point = board[to_row - 1][to_col]
@@ -65,6 +71,12 @@ class Pawn(Piece):
                         next_point_two = board[to_row - 1][to_col]
                         if next_point == 0 and next_point_two == 0:
                             moves.append((to_row - 2, to_col))
+                # En passant for white
+                if self.en_passant_target is not None and to_row == 3:
+                    if to_col < 7 and self.en_passant_target == (to_row - 1, to_col + 1):
+                        moves.append(self.en_passant_target)
+                    if to_col > 0 and self.en_passant_target == (to_row - 1, to_col - 1):
+                        moves.append(self.en_passant_target)
         except IndexError as e:
             logging.warning("pawn class: IndexError %s", e)
         return moves

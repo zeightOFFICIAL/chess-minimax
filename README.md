@@ -25,7 +25,7 @@ Ensure all packages from `requirements.txt` are installed. Use any Python 3.6.9�
 python main.py
 ```
 
-**Note:** `main.py` has a quirk — `if __name__ == "main":` (missing underscores). The game still works because `game.py` calls `main()` at module level, but `python main.py` alone does nothing. To launch directly, use `python game.py`.
+Simply run `python main.py`.
 
 ### Building a standalone executable
 
@@ -71,7 +71,7 @@ To add a custom visual theme:
 
 ```
 python-chess-minimax/
-├── main.py                          # Entry point (see quirk above)
+├── main.py                          # Entry point (`if __name__ == "__main__"` calls `game.main()`)
 ├── game.py                          # Pygame loop, rendering, input dispatch
 ├── config.txt                       # Runtime configuration overrides
 ├── configuration/
@@ -122,26 +122,157 @@ All AI logic lives in `scripts/algorithm.py` (`class Solution`). The type of eva
 
 #### Board Evaluation
 
-**Simple evaluation** (`evaluate_board`):
-Sum of material values for each side. If `color == "w"` returns `white_score - black_score`, else the opposite.
+**Simple evaluation** (`evaluate_board`) — pure material count:
 
 $$E = \sum_{p \in \text{pieces}} \text{value}(p)$$
-$$\text{value} = \{\text{Pawn}:100,\ \text{Knight}:320,\ \text{Bishop}:330,\ \text{Rook}:500,\ \text{Queen}:900,\ \text{King}:20000\}$$
 
-**Advanced evaluation** (`evaluate_board_advanced`):
-Material value plus piece-square table (PST) positional bonuses:
+| Piece | ♙ Pawn | ♘ Knight | ♗ Bishop | ♖ Rook | ♕ Queen | ♔ King |
+|-------|--------|----------|----------|--------|---------|--------|
+| Value | 100 | 320 | 330 | 500 | 900 | 20000 |
+
+**Advanced evaluation** (`evaluate_board_advanced`) — material + Piece-Square Table (PST):
 
 $$E = \sum_{p \in \text{pieces}} \big(\text{value}(p) + \text{PST}[p.\text{type}][\text{row}][\text{col}]\big)$$
 
-PSTs are defined for each piece type from white's perspective. Black's tables are obtained by vertically mirroring (`numpy.flipud`) the white tables, ensuring symmetric positional knowledge.
+PSTs assign a bonus/penalty to each square per piece type, encoding positional knowledge (center control, pawn structure, king safety). Black's tables are mirrored vertically (`numpy.flipud`) for symmetry.
 
-#### MVV-LVA Move Ordering
+##### ♙ Pawn PST (white)
 
-In `scripts/evaluate.py:mvv_lva_score`, moves are ordered by Most Valuable Victim — Least Valuable Attacker:
+```
+  a    b    c    d    e    f    g    h
+┌────┬────┬────┬────┬────┬────┬────┬────┐
+│  0 │  0 │  0 │  0 │  0 │  0 │  0 │  0 │ 8
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│ 50 │ 50 │ 50 │ 50 │ 50 │ 50 │ 50 │ 50 │ 7
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│ 10 │ 10 │ 20 │ 30 │ 30 │ 20 │ 10 │ 10 │ 6
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│  5 │  5 │ 10 │ 25 │ 25 │ 10 │  5 │  5 │ 5
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│  0 │  0 │  0 │ 20 │ 20 │  0 │  0 │  0 │ 4
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│  5 │ -5 │-10 │  0 │  0 │-10 │ -5 │  5 │ 3
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│  5 │ 10 │ 10 │-20 │-20 │ 10 │ 10 │  5 │ 2
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│  0 │  0 │  0 │  0 │  0 │  0 │  0 │  0 │ 1
+└────┴────┴────┴────┴────┴────┴────┴────┘
+```
 
-$$\text{score} = \text{value}(\text{victim}) - 0.1 \times \text{value}(\text{attacker})$$
+##### ♘ Knight PST (white)
 
-Captures are searched first (higher victim value), and among equal victims, the least valuable attacker is preferred. Non-captures get a score of −1 so they are searched last. This accelerates Alpha-Beta pruning by finding strong moves early.
+```
+  a    b    c    d    e    f    g    h
+┌────┬────┬────┬────┬────┬────┬────┬────┐
+│-50 │-40 │-30 │-30 │-30 │-30 │-40 │-50 │ 8
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-40 │-20 │  0 │  0 │  0 │  0 │-20 │-40 │ 7
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-30 │  0 │ 10 │ 15 │ 15 │ 10 │  0 │-30 │ 6
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-30 │  5 │ 15 │ 20 │ 20 │ 15 │  5 │-30 │ 5
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-30 │  0 │ 15 │ 20 │ 20 │ 15 │  0 │-30 │ 4
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-30 │  5 │ 10 │ 15 │ 15 │ 10 │  5 │-30 │ 3
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-40 │-20 │  0 │  5 │  5 │  0 │-20 │-40 │ 2
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-50 │-40 │-30 │-30 │-30 │-30 │-40 │-50 │ 1
+└────┴────┴────┴────┴────┴────┴────┴────┘
+```
+
+##### ♗ Bishop PST (white)
+
+```
+  a    b    c    d    e    f    g    h
+┌────┬────┬────┬────┬────┬────┬────┬────┐
+│-20 │-10 │-10 │-10 │-10 │-10 │-10 │-20 │ 8
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-10 │  0 │  0 │  0 │  0 │  0 │  0 │-10 │ 7
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-10 │  0 │  5 │ 10 │ 10 │  5 │  0 │-10 │ 6
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-10 │  5 │  5 │ 10 │ 10 │  5 │  5 │-10 │ 5
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-10 │  0 │ 10 │ 10 │ 10 │ 10 │  0 │-10 │ 4
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-10 │ 10 │ 10 │ 10 │ 10 │ 10 │ 10 │-10 │ 3
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-10 │  5 │  0 │  0 │  0 │  0 │  5 │-10 │ 2
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-20 │-10 │-10 │-10 │-10 │-10 │-10 │-20 │ 1
+└────┴────┴────┴────┴────┴────┴────┴────┘
+```
+
+##### ♖ Rook PST (white)
+
+```
+  a    b    c    d    e    f    g    h
+┌────┬────┬────┬────┬────┬────┬────┬────┐
+│  0 │  0 │  0 │  0 │  0 │  0 │  0 │  0 │ 8
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│  5 │ 10 │ 10 │ 10 │ 10 │ 10 │ 10 │  5 │ 7
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│ -5 │  0 │  0 │  0 │  0 │  0 │  0 │ -5 │ 6
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│ -5 │  0 │  0 │  0 │  0 │  0 │  0 │ -5 │ 5
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│ -5 │  0 │  0 │  0 │  0 │  0 │  0 │ -5 │ 4
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│ -5 │  0 │  0 │  0 │  0 │  0 │  0 │ -5 │ 3
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│ -5 │  0 │  0 │  0 │  0 │  0 │  0 │ -5 │ 2
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│  0 │  0 │  0 │  5 │  5 │  0 │  0 │  0 │ 1
+└────┴────┴────┴────┴────┴────┴────┴────┘
+```
+
+##### ♕ Queen PST (white)
+
+```
+  a    b    c    d    e    f    g    h
+┌────┬────┬────┬────┬────┬────┬────┬────┐
+│-20 │-10 │-10 │ -5 │ -5 │-10 │-10 │-20 │ 8
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-10 │  0 │  0 │  0 │  0 │  0 │  0 │-10 │ 7
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-10 │  0 │  5 │  5 │  5 │  5 │  0 │-10 │ 6
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│ -5 │  0 │  5 │  5 │  5 │  5 │  0 │ -5 │ 5
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│  0 │  0 │  5 │  5 │  5 │  5 │  0 │ -5 │ 4
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-10 │  5 │  5 │  5 │  5 │  5 │  0 │-10 │ 3
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-10 │  0 │  5 │  0 │  0 │  0 │  0 │-10 │ 2
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-20 │-10 │-10 │ -5 │ -5 │-10 │-10 │-20 │ 1
+└────┴────┴────┴────┴────┴────┴────┴────┘
+```
+
+##### ♔ King PST (white)
+
+```
+  a    b    c    d    e    f    g    h
+┌────┬────┬────┬────┬────┬────┬────┬────┐
+│-30 │-40 │-40 │-50 │-50 │-40 │-40 │-30 │ 8
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-30 │-40 │-40 │-50 │-50 │-40 │-40 │-30 │ 7
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-30 │-40 │-40 │-50 │-50 │-40 │-40 │-30 │ 6
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-30 │-40 │-40 │-50 │-50 │-40 │-40 │-30 │ 5
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-20 │-30 │-30 │-40 │-40 │-30 │-30 │-20 │ 4
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│-10 │-20 │-20 │-20 │-20 │-20 │-20 │-10 │ 3
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│ 20 │ 20 │  0 │  0 │  0 │  0 │ 20 │ 20 │ 2
+├────┼────┼────┼────┼────┼────┼────┼────┤
+│ 20 │ 30 │ 10 │  0 │  0 │ 10 │ 30 │ 20 │ 1
+└────┴────┴────┴────┴────┴────┴────┴────┘
+```
 
 #### Minimax Algorithm
 
@@ -153,9 +284,41 @@ $$f(s, d) = \begin{cases}
 \min_{m \in \text{moves}} f(\text{apply}(s, m), d - 1) & \text{if minimizing player}
 \end{cases}$$
 
-Implementation in `algorithm.py:minimax()`:
-- **Maximizing** (AI's turn): picks child with highest value, updates `alpha = max(alpha, best)`
-- **Minimizing** (opponent's turn): picks child with lowest value, updates `beta = min(beta, best)`
+**Search tree at depth 3 (difficulty 2 / 3):**
+
+```
+                  MAX ── Root (AI)
+                  │
+          ┌───────┼───────────┐
+          │       │           │
+       Move a  Move b  ... Move n
+          │       │           │
+     ┌────┴┐   ┌─┴──┐    ┌───┴──┐
+     │    │   │    │    │      │        MIN ── Opponent replies
+     v    v   v    v    v      v
+   eval  eval eval eval eval  eval
+
+  ── depth 1: opponent's best (min) is propagated up
+  ── depth 2: AI's best (max) among opponent's replies
+  ── depth 3: if using minimax depth 3, one more ply
+```
+
+**Minimax propagation at depth 2:**
+
+```
+     MAX ── Root          ── selects max(3, 0, 2) = 3
+      │
+  ┌───┼───┐
+  3   0   2               <── values after one opponent ply
+  │   │   │
+  MIN MIN MIN             ── each MIN selects its minimum
+ / \ / \ / \
+2 3 0-1 2 5               <── leaf evaluations (depth 0)
+```
+
+Implementation: `algorithm.py:minimax()`:
+- **Maximizing** (AI's turn): tracks `best = max(best, value)`, updates `alpha`
+- **Minimizing** (opponent's turn): tracks `best = min(best, value)`, updates `beta`
 
 #### Alpha-Beta Pruning (Difficulty 3)
 
@@ -171,7 +334,47 @@ Where:
 - $\alpha$ — best value the maximizer can guarantee so far (starts at $-\infty$)
 - $\beta$ — best value the minimizer can guarantee so far (starts at $+\infty$)
 
-At difficulty 3, alpha-beta is used at the root as well: after evaluating each root candidate, `alpha = max(alpha, best_value)` is updated, and the loop breaks when `beta <= alpha`.
+**Pruning example — branch C is cut:**
+
+```
+         MAX ── Root  [α=-∞, β=+∞]
+          │
+    ┌─────┼──────┐
+    │     │      │
+    A     B      C ✂︎             <── C pruned
+    3     2     ???
+
+    │     │
+    MIN   MIN  [α=3, β=+∞]
+   / \   / \
+  3  5  2  8
+
+  After A returns 3 → α=3 at root.
+  B returns 2 (≤ α), so C cannot improve.
+  β=α → prune.
+```
+
+At difficulty 3, alpha-beta is applied at the root level: `alpha = max(alpha, best_value)` after each candidate, and the loop breaks immediately when `beta <= alpha`.
+
+#### MVV-LVA Move Ordering
+
+Moves are ordered by **Most Valuable Victim — Least Valuable Attacker** to feed strong captures to Alpha-Beta first:
+
+$$\text{score} = \text{value}(\text{victim}) - 0.1 \times \text{value}(\text{attacker})$$
+
+Non-captures get score = −1 and are searched last.
+
+**Example — black ♞ (320) captures white pieces:**
+
+| Capture | Victim | Attacker | Score | Search order |
+|---------|--------|----------|-------|--------------|
+| ♞ x ♕  | 900    | 320      | 868   | 1st          |
+| ♞ x ♖  | 500    | 320      | 468   | 2nd          |
+| ♞ x ♗  | 330    | 320      | 298   | 3rd          |
+| ♞ x ♙  | 100    | 320      | 68    | 4th          |
+| ♞ e5   | —      | —        | −1    | last         |
+
+Captures of queens are searched first, then rooks, bishops/knights, pawns — and positional moves last. This maximizes pruning efficiency by establishing a strong alpha bound early.
 
 #### Zobrist Hashing & Transposition Table
 
@@ -201,7 +404,7 @@ When in check, all difficulty levels fall back to a 1-ply search that evaluates 
 | Feature | Status |
 |---------|--------|
 | Castling (roque) | Not implemented |
-| En passant | Not implemented |
+| En passant | ✅ Implemented |
 | Pawn promotion | Always promotes to Queen only |
 | Checkmate detection | Not explicitly implemented; game relies on players surrendering (`s` key) |
 | Draw detection | PvP only — toggle draw vote with `p` key |
@@ -220,4 +423,4 @@ When in check, all difficulty levels fall back to a 1-ply search that evaluates 
 
 ### Project Status
 
-This is an academic project. The AI is fully functional at all four difficulty levels, but the game logic lacks several standard chess rules. The architecture supports easy extension for castling, en passant, and promotion choices with moderate refactoring of `Board.move()` and `Board.simple_move()`.
+This is an academic project. The AI is fully functional at all four difficulty levels, but the game logic lacks several standard chess rules. The architecture supports easy extension for castling and promotion choices with moderate refactoring of `Board.move()` and `Board.simple_move()`.
