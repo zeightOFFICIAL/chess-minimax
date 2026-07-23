@@ -7,6 +7,7 @@ Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 # flowingconfig.py
 
 
+import configparser
 import logging
 import sys, os
 
@@ -67,24 +68,18 @@ freeze_time = 3
 
 # reading from file ====================================================================================================
 try:
-    config_file = open(os.path.join(_config_dir, "config.txt"))
-    lines = config_file.readlines()
-    for line in lines:
-        var_name = str(line.split("=")[0])
-        if var_name in ["game_mode", "difficulty", "visual_set", "freeze_time", "time_restriction"]:
-            var_value = int(line.split("=")[1])
-            if var_name == "game_mode":
-                game_mode = var_value
-            elif var_name == "difficulty":
-                difficulty = var_value
-            elif var_name == "visual_set":
-                visual_set = var_value
-            elif var_name == "freeze_time":
-                freeze_time = var_value
-            elif var_name == "time_restriction":
-                time_restriction = var_value
-            logging.debug("Reading config: Assign value %d to parameter %s", var_value, var_name)
-except (FileExistsError, AttributeError, ValueError, FileNotFoundError) as e:
+    config = configparser.ConfigParser()
+    config.read(os.path.join(_config_dir, "config.txt"))
+    if config.has_section("settings"):
+        settings = config["settings"]
+        game_mode = settings.getint("game_mode", fallback=game_mode)
+        difficulty = settings.getint("difficulty", fallback=difficulty)
+        visual_set = settings.getint("visual_set", fallback=visual_set)
+        freeze_time = settings.getint("freeze_time", fallback=freeze_time)
+        time_restriction = settings.getint("time_restriction", fallback=time_restriction)
+        logging.debug("Reading config: game_mode=%d, difficulty=%d, visual_set=%d, freeze_time=%d, "
+                      "time_restriction=%d", game_mode, difficulty, visual_set, freeze_time, time_restriction)
+except (configparser.Error, ValueError) as e:
     logging.warning("Reading config: Config file is corrupted, does not exist or is unreadable, possibly parsing error."
                     "\nNot parsed values are set to default.")
 

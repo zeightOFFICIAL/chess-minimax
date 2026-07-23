@@ -12,6 +12,10 @@ from gameobjects.piece import Piece
 class Rook(Piece):
     piece_img = 5
 
+    def __init__(self, row, col, color):
+        super().__init__(row, col, color)
+        self.rook = True
+
     def valid_moves(self, board):
         to_row = self.row
         to_col = self.col

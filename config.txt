@@ -1,3 +1,4 @@
+[settings]
 game_mode=0
 difficulty=3
 visual_set=1
