@@ -1,0 +1,28 @@
+"""
+PyChess with minimax AI
+Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
+"""
+
+# fonts.py
+
+import pygame
+
+from configuration.flowingconfig import width
+
+# Uses pygame's bundled default font (not a SysFont lookup) so text renders
+# identically regardless of which fonts happen to be installed on the host.
+pygame.font.init()
+
+player_time_font = pygame.font.Font(None, int(width * 0.022))
+king_condition_font = pygame.font.Font(None, int(width * 0.033))
+
+main_text_font = pygame.font.Font(None, int(width * 0.093))
+main_text_font.set_bold(True)
+time_text_font = pygame.font.Font(None, int(width * 0.04))
+time_text_font.set_bold(True)
+help_text_font = pygame.font.Font(None, int(width * 0.026))
+help_text_font.set_bold(True)
+secondary_help_font = pygame.font.Font(None, int(width * 0.04))
+secondary_help_font.set_bold(True)
+primal_help_font = pygame.font.Font(None, int(width * 0.053))
+primal_help_font.set_bold(True)
