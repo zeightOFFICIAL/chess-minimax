@@ -3,19 +3,12 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# ver 926
-# game.py
-
-
-# libraries ============================================================================================================
 from sys import exit
 from time import time
-from timeit import default_timer as timer
 import os
 
 import pygame
 
-# ----------------------------------------------------------------------------------------------------------------------
 from configuration.flowingconfig import *
 from gameobjects.board import Board
 from scripts.algorithm import Solution
@@ -24,7 +17,6 @@ from dialogs.end_screen import end_screen
 from dialogs.promotion_menu import choose_promotion
 from dialogs.fonts import player_time_font, king_condition_font
 
-# resources ============================================================================================================
 _BASE = "resources/images"
 raw_board = pygame.image.load(f"{_BASE}/eq_chessboard.png")
 icon = pygame.image.load("resources/icons/icon.png")
@@ -40,8 +32,6 @@ if visual_set != 0:
 scaled_board = pygame.transform.smoothscale(raw_board, (width - PADDING_ABSOLUTE, HEIGHT - PADDING_ABSOLUTE))
 
 
-# functions ============================================================================================================
-# FUNCTION to redraw the gamewindow. renders the new one from scrap, and updates
 def redraw_gamewindow(board_to_render, player1_time, player2_time, state_white, state_black):
     pygame.draw.rect(win, (0, 0, 0), (0, 0, width, width))
     win.blit(scaled_board, (PADDING_HALF, PADDING_HALF))
@@ -68,7 +58,6 @@ def redraw_gamewindow(board_to_render, player1_time, player2_time, state_white, 
     pygame.display.update()
 
 
-# FUNCTION to process mouse click on the screen.
 def click(pos):
     x = pos[0]
     y = pos[1]
@@ -86,7 +75,6 @@ def click(pos):
             "Click: Clicked at position: (x = %d, y = %d), not at the cell.", x, y)
 
 
-# main -----------------------------------------------------------------------------------------------------------------
 def main():
     logging.debug("Main: Game started: %d, limit: %d", game_mode * (difficulty + 1), time_restriction)
     white_time, black_time = TIME_RESTRICTION_SECONDS, TIME_RESTRICTION_SECONDS
@@ -104,13 +92,13 @@ def main():
         if turn_color == "w":
             white_time -= (time() - wide_timer)
             if white_time <= 0:
-                end_screen(win, "Black Wins!", time() - start_time)
+                end_screen(win, "Black Wins!", time() - start_time, main)
                 logging.debug(
                     "Main: Black wins. Bcs. white out of time. Turn: %d", turn_number)
         else:
             black_time -= (time() - wide_timer)
             if black_time <= 0:
-                end_screen(win, "White Wins!", time() - start_time)
+                end_screen(win, "White Wins!", time() - start_time, main)
                 logging.debug(
                     "Main: White wins. Bcs. black out of time. Turn: %d", turn_number)
         wide_timer = time()
@@ -129,9 +117,9 @@ def main():
                     logging.debug(
                         "Main: Surrender button is pressed by %c at turn: %d", turn_color, turn_number)
                     if turn_color == "w":
-                        end_screen(win, "Black Wins!", time() - start_time)
+                        end_screen(win, "Black Wins!", time() - start_time, main)
                     else:
-                        end_screen(win, "White Wins!", time() - start_time)
+                        end_screen(win, "White Wins!", time() - start_time, main)
                 if event.key == pygame.K_p and game_mode == 0:
                     if turn_color == "w":
                         white_wants_draw = 1 if white_wants_draw == 0 else 0
@@ -143,41 +131,29 @@ def main():
                         "Main: Black wants draw? - %s", bool(black_wants_draw))
                     if black_wants_draw and white_wants_draw:
                         logging.debug("Main: Draw.")
-                        end_screen(win, "Draw!", time() - start_time)
-            # game mode = 1. BLACK - AI, WHITE - PLAYER. ---------------------------------------------------------------
+                        end_screen(win, "Draw!", time() - start_time, main)
+            # game mode = 1. BLACK - AI, WHITE - PLAYER.
             if turn_color == "b" and game_mode == 1:
                 if statewhite == 1:
-                    end_screen(win, "Black Wins!", time() - start_time)
+                    end_screen(win, "Black Wins!", time() - start_time, main)
                     logging.debug("Main: Black wins. White ended its turn with checked king. At turn: %d", turn_number)
                 change = False
                 solve = Solution(game_board, turn_color)
                 try:
-                    # start = timer()
                     (piecex, piecey), choice = solve.random_choice(turn_color)
-                    # end = timer()
-                    # print(end - start)
                     if difficulty == 1:
-                        # start = timer()
                         (piecex, piecey), choice = solve.tier3_choice(turn_color)
-                        # end = timer()
-                        # print(end - start)
                     elif difficulty == 2:
-                        # start = timer()
                         (piecex, piecey), choice = solve.tier2_choice(turn_color)
-                        # end = timer()
-                        # print(end - start)
                     elif difficulty == 3:
-                        # start = timer()
                         (piecex, piecey), choice = solve.tier1_choice(turn_color)
-                        # end = timer()
-                        # print(end - start)
                     game_board.simple_move(
                         (piecex, piecey), choice, "b")
                     change = True
                 except TypeError:
                     logging.warning("Main: Type error. White wins. It's either critical script failure or true winning "
-                                    "condition. Typical crutch))) At turn %c.%d", turn_color, turn_number)
-                    end_screen(win, "White Wins!", time() - start_time)
+                                    "condition. At turn %c.%d", turn_color, turn_number)
+                    end_screen(win, "White Wins!", time() - start_time, main)
                 if change:
                     turn_number += 1
                     logging.debug("Main: Turn number: %d", turn_number)
@@ -185,16 +161,16 @@ def main():
                     turn_color = "w"
                 statewhite = 1 if game_board.piece_is_checked("w") else 0
                 stateblack = 1 if game_board.piece_is_checked("b") else 0
-            # game_mode = 1. BLACK - AI, WHITE - PLAYER. game_mode = 0 BLACK - PLAYER, WHITE - PLAYER. -----------------
+            # game_mode = 1. BLACK - AI, WHITE - PLAYER. game_mode = 0 BLACK - PLAYER, WHITE - PLAYER.
             elif (turn_color == "w" and game_mode == 1) or game_mode == 0:
                 if turn_color == "b" and statewhite == 1:
                     logging.debug(
                         "Main: Black wins. White ended its turn with checked king. At turn: %d", turn_number)
-                    end_screen(win, "Black Wins!", time() - start_time)
+                    end_screen(win, "Black Wins!", time() - start_time, main)
                 elif turn_color == "w" and stateblack == 1:
                     logging.debug(
                         "Main: White wins. Black ended its turn with checked king. At turn: %d", turn_number)
-                    end_screen(win, "White Wins!", time() - start_time)
+                    end_screen(win, "White Wins!", time() - start_time, main)
                 change = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     clicked_position = pygame.mouse.get_pos()
@@ -226,7 +202,6 @@ def main():
                     stateblack = 1 if game_board.piece_is_checked("b") else 0
 
 
-# ----------------------------------------------------------------------------------------------------------------------
 win = pygame.display.set_mode((width, HEIGHT), vsync=True)
 pygame.display.set_caption("PyChess")
 pygame.display.set_icon(icon)

@@ -3,8 +3,6 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# end_screen.py
-
 from sys import exit
 
 import pygame
@@ -13,8 +11,7 @@ from configuration.flowingconfig import *
 from dialogs.fonts import main_text_font, time_text_font, help_text_font
 
 
-# FUNCTION to render last (end) screen. Displays time of game and the winner.
-def end_screen(win, text, total_time):
+def end_screen(win, text, total_time, restart_callback):
     total_time = int(total_time)
     format_time = f'{total_time // 60:d}:{total_time % 60:02d}'
     text_render = main_text_font.render(text, True, (255, 0, 0))
@@ -40,7 +37,4 @@ def end_screen(win, text, total_time):
                 if event.key == pygame.K_r:
                     logging.debug(
                         "End screen: Restart button is pressed.")
-                    # Deferred import: game.py imports this module, so importing
-                    # game at module load time would create a circular import.
-                    import game
-                    game.main()
+                    restart_callback()

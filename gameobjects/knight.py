@@ -3,9 +3,6 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# ver 926
-# knight.py
-
 from gameobjects.piece import Piece
 
 

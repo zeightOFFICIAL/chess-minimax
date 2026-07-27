@@ -3,11 +3,6 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# ver 926
-# board.py
-
-
-# libraries ============================================================================================================
 from collections import namedtuple
 
 from configuration.flowingconfig import *
@@ -26,7 +21,6 @@ UndoMove = namedtuple("UndoMove", [
 PROMOTABLE_ROW = {"w": 0, "b": 7}
 
 
-# chessboard class =====================================================================================================
 class Board:
     def __init__(self, rows, cols):
         self.rows = rows
@@ -59,7 +53,7 @@ class Board:
             self.board[6][board_line] = Pawn(6, board_line, "w")
         logging.debug("Set chessboard: figures are set to a normal chess game")
 
-    # functions ========================================================================================================
+    # functions
     def update_moves(self):
         for row_index in range(self.rows):
             for col_index in range(self.cols):
@@ -196,7 +190,7 @@ class Board:
                 if self.board[row_index][col_index] != 0:
                     self.board[row_index][col_index].selected = False
 
-    # 'move' for player ------------------------------------------------------------------------------------------------
+    # 'move' for player
     def move(self, point_from, point_to, color):
         checked_before = self.piece_is_checked(color)
         changed = True
@@ -277,7 +271,7 @@ class Board:
         self.update_moves()
         return changed
 
-    # 'move' for chess algorithm ---------------------------------------------------------------------------------------
+    # 'move' for chess algorithm
     def simple_move(self, point_from, point_to, color):
         new_board = [row[:] for row in self.board]
         moving_piece = new_board[point_from[0]][point_from[1]]
@@ -317,7 +311,7 @@ class Board:
         self.piece_at_the_end(color)
         self.update_moves()
 
-    # 'make_move' / 'undo_move' for search --------------------------------------------------------------------------
+    # 'make_move' / 'undo_move' for search
     # Mutates the board in place and returns an UndoMove token that reverts it exactly, avoiding the cost of
     # copy.deepcopy(board) at every node of the minimax tree.
     def make_move(self, point_from, point_to, color):

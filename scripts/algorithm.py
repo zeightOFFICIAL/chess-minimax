@@ -3,17 +3,11 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# ver 917
-# algorithm.py
-
-
-# libraries ============================================================================================================
 import random
 from math import inf
 from collections import namedtuple
 
 from configuration.flowingconfig import *
-# ----------------------------------------------------------------------------------------------------------------------
 from scripts.evaluate import evaluate_board_advanced, evaluate_board, mvv_lva_score
 from scripts import zobrist
 
@@ -121,13 +115,12 @@ def minimax(board, depth, alpha, beta, maximizing, tt=None, z_hash=None, root_co
         return best
 
 
-# class for algorithmic solution =======================================================================================
 class Solution:
     def __init__(self, board, color):
         self.board = board
         self.evaluation = evaluate_board(self.board, color)
 
-    # diff. 0 random choice --------------------------------------------------------------------------------------------
+    # diff. 0 random choice
     def random_choice(self, color):
         all_moves = []
         was_checked = self.board.piece_is_checked(color)
@@ -153,7 +146,7 @@ class Solution:
             logging.debug("Random choice: total moves: %d", len(all_moves))
             return random.choice(all_moves)
 
-    # diff. 1 evaluation -----------------------------------------------------------------------------------------------
+    # diff. 1 evaluation
     def tier3_choice(self, color):
         best_value = -inf
         best_move = -1
@@ -181,7 +174,7 @@ class Solution:
                       best_value, self.evaluation)
         return best_move
 
-    # diff. 2 minimax depth 2, advanced evaluation ---------------------------------------------------------------------
+    # diff. 2 minimax depth 2, advanced evaluation
     def tier2_choice(self, color):
         was_checked = self.board.piece_is_checked(color)
         if was_checked:
@@ -224,7 +217,7 @@ class Solution:
                 self.board.undo_move(undo)
             return best_move
 
-    # diff. 3 minimax depth 3, advanced evaluation ---------------------------------------------------------------------
+    # diff. 3 minimax depth 3, advanced evaluation
     def tier1_choice(self, color):
         was_checked = self.board.piece_is_checked(color)
         if was_checked:

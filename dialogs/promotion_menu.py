@@ -3,8 +3,6 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# promotion_menu.py
-
 from sys import exit
 
 import pygame
@@ -20,7 +18,7 @@ from gameobjects.rook import Rook
 _CHOICES = [(Queen, 4), (Rook, 5), (Bishop, 0), (Knight, 2)]
 
 
-# FUNCTION to render the promotion menu and block until the player picks a piece.
+# Blocks until the player clicks one of the four pieces, then returns its class.
 def choose_promotion(win, color):
     images = white_all_images if color == "w" else black_all_images
     icon_size = width * 0.12

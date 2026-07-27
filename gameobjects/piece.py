@@ -3,18 +3,12 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# ver 926
-# piece.py
-
-
-# libraries ============================================================================================================
 import pygame
 import sys, os
 
 if getattr(sys, 'frozen', False):
     os.chdir(sys._MEIPASS)
 
-# resources ============================================================================================================
 from configuration.flowingconfig import *
 
 _BASE = "resources/images"
@@ -64,7 +58,6 @@ white_all_images = [w_bishop, w_king, w_knight, w_pawn, w_queen, w_rook]
 black_all_scaled = []
 white_all_scaled = []
 
-# scaling --------------------------------------------------------------------------------------------------------------
 for piece_img in black_all_images:
     black_all_scaled.append(pygame.transform.smoothscale(piece_img, (CELL_SIZE_X, CELL_SIZE_Y)))
 for piece_img in white_all_images:
@@ -73,7 +66,6 @@ scaled_select = pygame.transform.smoothscale(raw_select, (CELL_SIZE_X, CELL_SIZE
 scaled_select2 = pygame.transform.smoothscale(raw_select_inv, (CELL_SIZE_X, CELL_SIZE_Y))
 
 
-# piece class ==========================================================================================================
 class Piece:
     piece_img = -1
     start_x = TOP_LEFT[0]

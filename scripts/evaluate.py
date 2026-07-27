@@ -3,9 +3,6 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# ver 918
-# evaluate.py
-
 from numpy import flipud
 
 # Piece-square tables (white's perspective, row 0 = rank 8)

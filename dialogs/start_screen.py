@@ -3,8 +3,6 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# start_screen.py
-
 from sys import exit
 
 import pygame
@@ -13,7 +11,6 @@ from configuration.flowingconfig import *
 from dialogs.fonts import primal_help_font, secondary_help_font
 
 
-# FUNCTION to render first (start) screen.
 def start_screen(win):
     primal_help_text = primal_help_font.render("Hotkeys", True, (255, 0, 0))
     first_help_line = secondary_help_font.render("q - to quit", True, (255, 255, 255))

@@ -40,18 +40,13 @@ main.py
             - config.txt
         (playing algorithm)
         - algorithm.py
-            - evalutaion.py
-
-originally build on:
-PyCharm 2021.3.3
-Python 3.9
-
-fully compatible with:
-Python 3.11.0
-
-18.06.2026
-ver 926
-main.py
+            - evaluate.py
+            - zobrist.py
+        (screens and menus)
+        - start_screen.py
+        - end_screen.py
+        - promotion_menu.py
+        - fonts.py
 """
 
 import game

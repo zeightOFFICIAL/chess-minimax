@@ -3,8 +3,6 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# fonts.py
-
 import pygame
 
 from configuration.flowingconfig import width

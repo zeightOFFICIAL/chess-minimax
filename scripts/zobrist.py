@@ -3,9 +3,6 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# ver 918
-# zobrist.py
-
 import random
 
 _PIECE_TYPES = 6
