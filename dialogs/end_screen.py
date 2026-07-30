@@ -14,13 +14,24 @@ from dialogs.fonts import main_text_font, time_text_font, help_text_font
 def end_screen(win, text, total_time, restart_callback):
     total_time = int(total_time)
     format_time = f'{total_time // 60:d}:{total_time % 60:02d}'
-    text_render = main_text_font.render(text, True, (255, 0, 0))
-    text_time = time_text_font.render(format_time, True, (255, 0, 0))
-    text_help = help_text_font.render("Press q - to quit and r - to restart", True, (255, 255, 255))
-    pygame.draw.rect(win, (0, 0, 0), (-1, width / 2 - text_render.get_height(), width + 1, width - width / 1.3))
-    win.blit(text_render, (width / 2 - text_render.get_width() / 2, width / 2 - text_render.get_height()))
-    win.blit(text_time, (width / 2 - text_time.get_width() / 2, width / 2))
-    win.blit(text_help, (width / 2 - text_help.get_width() / 2, width / 2 + text_time.get_height() * 1.2))
+    lines = (
+        main_text_font.render(text, True, (255, 0, 0)),
+        time_text_font.render(format_time, True, (255, 0, 0)),
+        help_text_font.render("Press q - to quit and r - to restart", True, (255, 255, 255)),
+    )
+
+    # Centre the banner on the window, then centre the stack of lines inside it.
+    line_gap = HEIGHT * 0.018
+    banner_padding = HEIGHT * 0.05
+    content_height = sum(line.get_height() for line in lines) + line_gap * (len(lines) - 1)
+    banner_height = content_height + banner_padding * 2
+    banner_top = (HEIGHT - banner_height) / 2
+
+    pygame.draw.rect(win, (0, 0, 0), (0, banner_top, width, banner_height))
+    line_y = banner_top + banner_padding
+    for line in lines:
+        win.blit(line, ((width - line.get_width()) / 2, line_y))
+        line_y += line.get_height() + line_gap
     pygame.display.update()
     run = True
     while run:

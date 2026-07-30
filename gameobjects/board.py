@@ -27,6 +27,9 @@ class Board:
         self.cols = cols
         self.board = [[0 for _ in range(8)] for _ in range(8)]
         self.en_passant_target = None
+        # Enemy pieces each colour has taken, as (piece_img, colour_of_victim) in capture order.
+        # Only real moves record here; the search's make_move/undo_move deliberately does not.
+        self.captured = {"w": [], "b": []}
         self.set_start_normal()
 
     def set_start_normal(self):
@@ -268,6 +271,9 @@ class Board:
             self.board = new_board
         else:
             self.reset_selected()
+            victim = captured_pawn_obj if en_passant_capture else prev_figure_dst
+            if victim != 0 and victim is not None and victim.color != color:
+                self.captured[color].append((victim.piece_img, victim.color))
         self.update_moves()
         return changed
 
@@ -277,9 +283,13 @@ class Board:
         moving_piece = new_board[point_from[0]][point_from[1]]
 
         # Detect en passant capture
+        victim = new_board[point_to[0]][point_to[1]]
         if moving_piece.pawn and self.en_passant_target is not None and point_to == self.en_passant_target:
             captured_pos = (point_from[0], point_to[1])
+            victim = new_board[captured_pos[0]][captured_pos[1]]
             new_board[captured_pos[0]][captured_pos[1]] = 0
+        if victim != 0 and victim.color != color:
+            self.captured[color].append((victim.piece_img, victim.color))
 
         if moving_piece.pawn:
             moving_piece.first = False

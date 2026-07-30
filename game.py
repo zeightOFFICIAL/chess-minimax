@@ -16,6 +16,7 @@ from dialogs.start_screen import start_screen
 from dialogs.end_screen import end_screen
 from dialogs.promotion_menu import choose_promotion
 from dialogs.fonts import player_time_font, king_condition_font
+from gameobjects.piece import white_all_images, black_all_images
 
 _BASE = "resources/images"
 raw_board = pygame.image.load(f"{_BASE}/eq_chessboard.png")
@@ -30,6 +31,40 @@ if visual_set != 0:
     else:
         logging.warning("Load visual set %s: board image not found, using default", visual_set)
 scaled_board = pygame.transform.smoothscale(raw_board, (width - PADDING_ABSOLUTE, HEIGHT - PADDING_ABSOLUTE))
+
+CAPTURED_ICON_SIZE = int(width * 0.028)
+CAPTURED_ICON_STEP = CAPTURED_ICON_SIZE * 0.9
+CAPTURED_GAP = width * 0.012
+CAPTURED_TRAY_PAD = CAPTURED_ICON_SIZE * 0.18
+# Mid grey: the window background is black, so black sprites would be invisible without a tray.
+CAPTURED_TRAY_COLOR = (105, 105, 105)
+_captured_icons = {
+    "w": [pygame.transform.smoothscale(img, (CAPTURED_ICON_SIZE, CAPTURED_ICON_SIZE)) for img in white_all_images],
+    "b": [pygame.transform.smoothscale(img, (CAPTURED_ICON_SIZE, CAPTURED_ICON_SIZE)) for img in black_all_images],
+}
+
+
+# Draws a row of captured-piece icons from anchor_x, running away from the timer it belongs to.
+def draw_captured_row(captured, anchor_x, center_y, grow_left):
+    if not captured:
+        return
+    icon_y = center_y - CAPTURED_ICON_SIZE / 2
+    positions = []
+    for index in range(len(captured)):
+        if grow_left:
+            positions.append(anchor_x - (index + 1) * CAPTURED_ICON_STEP)
+        else:
+            positions.append(anchor_x + index * CAPTURED_ICON_STEP)
+
+    tray_left = min(positions) - CAPTURED_TRAY_PAD
+    tray_right = max(positions) + CAPTURED_ICON_SIZE + CAPTURED_TRAY_PAD
+    pygame.draw.rect(win, CAPTURED_TRAY_COLOR,
+                     (tray_left, icon_y - CAPTURED_TRAY_PAD,
+                      tray_right - tray_left, CAPTURED_ICON_SIZE + CAPTURED_TRAY_PAD * 2),
+                     border_radius=int(CAPTURED_TRAY_PAD * 2))
+
+    for icon_x, (piece_img, piece_color) in zip(positions, captured):
+        win.blit(_captured_icons[piece_color][piece_img], (icon_x, icon_y))
 
 
 def redraw_gamewindow(board_to_render, player1_time, player2_time, state_white, state_black):
@@ -52,9 +87,18 @@ def redraw_gamewindow(board_to_render, player1_time, player2_time, state_white, 
             "Black King is under check!", True, (255, 255, 255), (0, 0, 0))
         win.blit(text_state2, (width - PADDING_HALF - text_state2.get_width(),
                                PADDING_HALF - text_state2.get_height() * 1.5))
-    win.blit(text_time1, (width - PADDING_HALF - text_time1.get_width(),
-                          width - PADDING_HALF + text_time1.get_height()))
-    win.blit(text_time2, (PADDING_HALF, PADDING_HALF - text_time2.get_height() * 2))
+    time1_x = width - PADDING_HALF - text_time1.get_width()
+    time1_y = width - PADDING_HALF + text_time1.get_height()
+    time2_y = PADDING_HALF - text_time2.get_height() * 2
+    win.blit(text_time1, (time1_x, time1_y))
+    win.blit(text_time2, (PADDING_HALF, time2_y))
+
+    # White's captures sit left of its bottom-right timer, black's right of its top-left timer.
+    draw_captured_row(board_to_render.captured["w"], time1_x - CAPTURED_GAP,
+                      time1_y + text_time1.get_height() / 2, grow_left=True)
+    draw_captured_row(board_to_render.captured["b"],
+                      PADDING_HALF + text_time2.get_width() + CAPTURED_GAP,
+                      time2_y + text_time2.get_height() / 2, grow_left=False)
     pygame.display.update()
 
 
