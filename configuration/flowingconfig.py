@@ -84,6 +84,9 @@ difficulty = 0 if (difficulty > 3) or (difficulty < 0) else difficulty
 freeze_time = 5 if (freeze_time > 10) or (freeze_time < 0) else freeze_time
 
 HEIGHT = width
+# The board area stays square; the move log is an extra strip to the right of it.
+MOVE_LOG_WIDTH = int(width * 0.22)
+WINDOW_WIDTH = width + MOVE_LOG_WIDTH
 PADDING_HALF = PADDING_ABSOLUTE // 2
 TOP_LEFT = (PADDING_HALF, PADDING_HALF)
 TOP_RIGHT = (width - PADDING_ABSOLUTE, PADDING_HALF)

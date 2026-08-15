@@ -12,6 +12,8 @@ from configuration.flowingconfig import width
 pygame.font.init()
 
 player_time_font = pygame.font.Font(None, int(width * 0.022))
+move_log_font = pygame.font.Font(None, int(width * 0.026))
+move_log_title_font = pygame.font.Font(None, int(width * 0.032))
 king_condition_font = pygame.font.Font(None, int(width * 0.033))
 
 main_text_font = pygame.font.Font(None, int(width * 0.093))

@@ -27,10 +27,10 @@ def end_screen(win, text, total_time, restart_callback):
     banner_height = content_height + banner_padding * 2
     banner_top = (HEIGHT - banner_height) / 2
 
-    pygame.draw.rect(win, (0, 0, 0), (0, banner_top, width, banner_height))
+    pygame.draw.rect(win, (0, 0, 0), (0, banner_top, WINDOW_WIDTH, banner_height))
     line_y = banner_top + banner_padding
     for line in lines:
-        win.blit(line, ((width - line.get_width()) / 2, line_y))
+        win.blit(line, ((WINDOW_WIDTH - line.get_width()) / 2, line_y))
         line_y += line.get_height() + line_gap
     pygame.display.update()
     run = True

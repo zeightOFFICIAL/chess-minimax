@@ -15,7 +15,7 @@ from scripts.algorithm import Solution
 from dialogs.start_screen import start_screen
 from dialogs.end_screen import end_screen
 from dialogs.promotion_menu import choose_promotion
-from dialogs.fonts import player_time_font, king_condition_font
+from dialogs.fonts import player_time_font, king_condition_font, move_log_font, move_log_title_font
 from gameobjects.piece import white_all_images, black_all_images
 
 _BASE = "resources/images"
@@ -67,8 +67,26 @@ def draw_captured_row(captured, anchor_x, center_y, grow_left):
         win.blit(_captured_icons[piece_color][piece_img], (icon_x, icon_y))
 
 
+MOVE_LOG_TITLE = move_log_title_font.render("Moves", True, (255, 255, 255))
+MOVE_LOG_X = width + MOVE_LOG_WIDTH * 0.08
+MOVE_LOG_TOP = PADDING_HALF + MOVE_LOG_TITLE.get_height() * 1.6
+MOVE_LOG_STEP = move_log_font.get_linesize()
+MOVE_LOG_MAX_LINES = int((HEIGHT - PADDING_HALF - MOVE_LOG_TOP) // MOVE_LOG_STEP)
+
+
+# Draws the move history in the strip right of the board, oldest at the top. Once it no longer fits,
+# the oldest lines drop off so the latest move stays visible at the bottom.
+def draw_move_log(move_log):
+    pygame.draw.rect(win, (0, 0, 0), (width, 0, MOVE_LOG_WIDTH, HEIGHT))
+    win.blit(MOVE_LOG_TITLE, (MOVE_LOG_X, PADDING_HALF))
+    for line_index, entry in enumerate(move_log[-MOVE_LOG_MAX_LINES:]):
+        text = move_log_font.render(entry, True, (215, 215, 215))
+        win.blit(text, (MOVE_LOG_X, MOVE_LOG_TOP + line_index * MOVE_LOG_STEP))
+
+
 def redraw_gamewindow(board_to_render, player1_time, player2_time, state_white, state_black):
     pygame.draw.rect(win, (0, 0, 0), (0, 0, width, width))
+    draw_move_log(board_to_render.move_log)
     win.blit(scaled_board, (PADDING_HALF, PADDING_HALF))
     board_to_render.draw(win)
     format_time_p1 = f'{player1_time // 60:d}:{player1_time % 60:02d}'
@@ -246,7 +264,7 @@ def main():
                     stateblack = 1 if game_board.piece_is_checked("b") else 0
 
 
-win = pygame.display.set_mode((width, HEIGHT), vsync=True)
+win = pygame.display.set_mode((WINDOW_WIDTH, HEIGHT), vsync=True)
 pygame.display.set_caption("PyChess")
 pygame.display.set_icon(icon)
 start_screen(win)

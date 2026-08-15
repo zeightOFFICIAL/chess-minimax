@@ -7,7 +7,7 @@ from sys import exit
 
 import pygame
 
-from configuration.flowingconfig import width
+from configuration.flowingconfig import width, HEIGHT, WINDOW_WIDTH
 from gameobjects.piece import white_all_images, black_all_images
 from gameobjects.bishop import Bishop
 from gameobjects.knight import Knight
@@ -35,7 +35,7 @@ def choose_promotion(win, color):
         rects.append(pygame.Rect(x, icon_y, icon_size, icon_size))
         scaled_icons.append(icon)
 
-    pygame.draw.rect(win, (0, 0, 0), (0, 0, width, width))
+    pygame.draw.rect(win, (0, 0, 0), (0, 0, WINDOW_WIDTH, HEIGHT))
     border_rect = (start_x - spacing, icon_y - spacing, total_width + spacing * 2, icon_size + spacing * 2)
     pygame.draw.rect(win, (255, 255, 255), border_rect, 2)
     for icon, rect in zip(scaled_icons, rects):

@@ -19,6 +19,15 @@ UndoMove = namedtuple("UndoMove", [
 ])
 
 PROMOTABLE_ROW = {"w": 0, "b": 7}
+COLOR_NAMES = {"w": "white", "b": "black"}
+# Indexed by Piece.piece_img, which follows the alphabetical order of the loaded sprites.
+PIECE_NAMES = ["bishop", "king", "knight", "pawn", "queen", "rook"]
+
+
+# Row 0 is rank 8 and col 0 is file A.
+def square_name(pos):
+    row, col = pos
+    return f"{chr(ord('A') + col)}{8 - row}"
 
 
 class Board:
@@ -30,7 +39,14 @@ class Board:
         # Enemy pieces each colour has taken, as (piece_img, colour_of_victim) in capture order.
         # Only real moves record here; the search's make_move/undo_move deliberately does not.
         self.captured = {"w": [], "b": []}
+        # "E2->E4 (white pawn)" lines for the moves played, oldest first. Like self.captured, only
+        # real moves record here.
+        self.move_log = []
         self.set_start_normal()
+
+    def log_move(self, piece, point_from, point_to):
+        self.move_log.append(f"{square_name(point_from)}->{square_name(point_to)} "
+                             f"({COLOR_NAMES[piece.color]} {PIECE_NAMES[piece.piece_img]})")
 
     def set_start_normal(self):
         self.board[0][0] = Rook(0, 0, "b")
@@ -274,6 +290,7 @@ class Board:
             victim = captured_pawn_obj if en_passant_capture else prev_figure_dst
             if victim != 0 and victim is not None and victim.color != color:
                 self.captured[color].append((victim.piece_img, victim.color))
+            self.log_move(moving_piece, point_from, point_to)
         self.update_moves()
         return changed
 
@@ -290,6 +307,7 @@ class Board:
             new_board[captured_pos[0]][captured_pos[1]] = 0
         if victim != 0 and victim.color != color:
             self.captured[color].append((victim.piece_img, victim.color))
+        self.log_move(moving_piece, point_from, point_to)
 
         if moving_piece.pawn:
             moving_piece.first = False

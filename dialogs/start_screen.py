@@ -16,7 +16,7 @@ def start_screen(win):
     first_help_line = secondary_help_font.render("q - to quit", True, (255, 255, 255))
     second_help_line = secondary_help_font.render("s - to surrender", True, (255, 255, 255))
     surrender_button_line = secondary_help_font.render("p - to vote for draw", True, (255, 255, 255))
-    pygame.draw.rect(win, (0, 0, 0), (-1, -1, width + 1, width + 1))
+    pygame.draw.rect(win, (0, 0, 0), (-1, -1, WINDOW_WIDTH + 1, HEIGHT + 1))
     win.blit(primal_help_text, ((width - primal_help_text.get_width()) / 2, width * 0.3))
     win.blit(first_help_line, (width * 0.4, width * 0.4))
     win.blit(second_help_line, (width * 0.4, width * 0.45))
