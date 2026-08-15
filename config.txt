@@ -1,4 +1,5 @@
-game_mode=1
+[settings]
+game_mode=0
 difficulty=3
 visual_set=0
 time_restriction=15

@@ -18,10 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 
 Algorithms and data structures
-Project
 Chess game (PyChess)
-Game itself and algorithm for playing
-SPBSUT
+
+St. Petersburg State University of Telecommunications named after prof. M.A. Bonch-Bruevich
 IKPI-04 (2022)
 Saganenko Artemii, Kuksin Alexander
 
@@ -30,25 +29,24 @@ main.py
         (game objects)
         - board.py
             - piece.py
+            - bishop.py
+            - knight.py
+            - king.py
+            - pawn.py
+            - queen.py
+            - rook.py
         (game configuration)
         - flowingconfig.py
             - config.txt
         (playing algorithm)
         - algorithm.py
-            - evalutaion.py
-
-originally build on:
-PyCharm 2021.3.3
-Python 3.9
-
-fully compatible with:
-Python 3.6.9
-Python 3.11.0
-Python 3.9.5
-
-28.01.2023
-ver 918
-main.py
+            - evaluate.py
+            - zobrist.py
+        (screens and menus)
+        - start_screen.py
+        - end_screen.py
+        - promotion_menu.py
+        - fonts.py
 """
 
 import game
@@ -58,5 +56,5 @@ def main():
     game.main()
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     main()

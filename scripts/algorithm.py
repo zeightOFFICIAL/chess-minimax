@@ -3,205 +3,18 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-# ver 917
-# algorithm.py
-
-
-# libraries ============================================================================================================
-import copy
 import random
 from math import inf
+from collections import namedtuple
 
 from configuration.flowingconfig import *
-# ----------------------------------------------------------------------------------------------------------------------
-from scripts.evaluate import evaluate_board_advanced, evaluate_board
+from scripts.evaluate import evaluate_board_advanced, evaluate_board, mvv_lva_score
+from scripts import zobrist
 
-
-# class for algorithmic solution =======================================================================================
-class Solution:
-    def __init__(self, board):
-        self.board = board
-        self.evaluation = evaluate_board(self.board, "b")
-
-    # diff. 0 random choice --------------------------------------------------------------------------------------------
-    def random_choice(self, color):
-        all_moves = []
-        was_checked = self.board.piece_is_checked(color)
-        self.board.update_moves()
-        new_board = copy.deepcopy(self.board)
-        all_pieces = get_all_pieces(new_board, color)
-        for piece in all_pieces:
-            for move in piece.move_list:
-                if was_checked:
-                    new_board = copy.deepcopy(self.board)
-                    new_board.simple_move((piece.row, piece.col), (move[1], move[0]), color)
-                    if not new_board.piece_is_checked(color):
-                        return (piece.row, piece.col), (move[0], move[1])
-                else:
-                    new_board = copy.deepcopy(self.board)
-                    new_board.simple_move((piece.row, piece.col), (move[1], move[0]), color)
-                    if not new_board.piece_is_checked(color):
-                        all_moves.append(((piece.row, piece.col), (move[0], move[1])))
-        if was_checked:
-            return -100
-        else:
-            if len(all_moves) <= 0:
-                return -100
-            logging.debug("Random choice: total moves: %d", len(all_moves))
-            return random.choice(all_moves)
-
-    # diff. 1 evaluation -----------------------------------------------------------------------------------------------
-    def tier3_choice(self, color):
-        best_value = -inf
-        best_move = -1
-        was_checked = self.board.piece_is_checked(color)
-        new_board = copy.deepcopy(self.board)
-        all_pieces = get_all_pieces(new_board, color)
-        for piece in all_pieces:
-            for move in piece.move_list:
-                if was_checked:
-                    new_board = copy.deepcopy(self.board)
-                    new_board.simple_move((piece.row, piece.col), (move[1], move[0]), color)
-                    if not new_board.piece_is_checked(color):
-                        if best_move == -1:
-                            best_move = (piece.row, piece.col), (move[0], move[1])
-                            best_value = evaluate_board(new_board, color)
-                        elif evaluate_board(new_board, color) > best_value:
-                            best_move = (piece.row, piece.col), (move[0], move[1])
-                            best_value = evaluate_board(new_board, color)
-                else:
-                    new_board = copy.deepcopy(self.board)
-                    new_board.simple_move((piece.row, piece.col), (move[1], move[0]), color)
-                    if not new_board.piece_is_checked(color):
-                        if evaluate_board(new_board, color) > best_value:
-                            best_value = evaluate_board(new_board, color)
-                            best_move = (piece.row, piece.col), (move[0], move[1])
-        if best_value == self.evaluation and not was_checked:
-            logging.debug("Eval. choice: all moves are equally evaluated, -> random choice")
-            return self.random_choice(color)
-        logging.debug("Eval. choice: the most arithmetically profitable move, has value of %d in comparison to %d",
-                      best_value, self.evaluation)
-        return best_move
-
-    # diff. 2 minimax depth 2, advanced evaluation ---------------------------------------------------------------------
-    def tier2_choice(self, color):
-        def minimaxdepth2(original_color):
-            max_value = -inf
-            maxed_move = -1
-            new_board_1 = copy.deepcopy(self.board)
-            all_pieces_1 = get_all_pieces(new_board_1, original_color)
-            for piece_1 in all_pieces_1:
-                for move_1 in piece_1.move_list:
-                    new_board_1 = copy.deepcopy(self.board)
-                    new_board_1.simple_move((piece_1.row, piece_1.col), (move_1[1], move_1[0]), original_color)
-                    if not new_board_1.piece_is_checked(original_color):
-                        all_pieces_2 = get_all_pieces(new_board_1, "w" if original_color == "b" else "b")
-                        min_value = inf
-                        for piece_2 in all_pieces_2:
-                            for move_2 in piece_2.move_list:
-                                new_board_2 = copy.deepcopy(new_board_1)
-                                new_board_2.simple_move((piece_2.row, piece_2.col), (move_2[1], move_2[0]),
-                                                        "w" if original_color == "b" else "b")
-                                if evaluate_board_advanced(new_board_2, original_color) < min_value:
-                                    min_value = evaluate_board_advanced(new_board_2, original_color)
-                        total_value = evaluate_board_advanced(new_board_1, original_color) + min_value
-                        logging.debug("Minimax2: the best move by white, player has value %d", min_value)
-                        if total_value > max_value:
-                            max_value = total_value
-                            maxed_move = (piece_1.row, piece_1.col), (move_1[0], move_1[1])
-            if self.evaluation == max_value:
-                logging.debug("Minimax2: the moves are arithmetically equal. -> random choice")
-                return self.random_choice(original_color)
-            logging.debug("Minimax2: the best (most efficient) move for black has value of %d", max_value)
-            return maxed_move
-
-        was_checked = self.board.piece_is_checked(color)
-        if was_checked:
-            all_pieces = get_all_pieces(self.board, color)
-            best_move = self.random_choice(color)
-            best_value = -inf
-            for piece in all_pieces:
-                for move in piece.move_list:
-                    new_board = copy.deepcopy(self.board)
-                    new_board.simple_move((piece.row, piece.col), (move[1], move[0]), color)
-                    if not new_board.piece_is_checked(color):
-                        if best_value == -inf:
-                            best_move = (piece.row, piece.col), (move[0], move[1])
-                            best_value = evaluate_board_advanced(new_board, color)
-                        elif evaluate_board_advanced(new_board, color) > best_value:
-                            best_move = (piece.row, piece.col), (move[0], move[1])
-                            best_value = evaluate_board_advanced(new_board, color)
-            return best_move
-        else:
-            best_move = minimaxdepth2(color)
-            return best_move
-
-    # diff. 3 minimax depth 3, advanced evaluation ---------------------------------------------------------------------
-    def tier1_choice(self, color):
-        def root_minimax(board, depth, maximizing):
-            best_value_root = -inf
-            maxed_move_root = self.random_choice(color)
-            all_pieces_1 = get_all_pieces(board, color)
-            for piece_1 in all_pieces_1:
-                for move_1 in piece_1.move_list:
-                    next_board = copy.deepcopy(board)
-                    next_board.simple_move((piece_1.row, piece_1.col), (move_1[1], move_1[0]), color)
-                    if not next_board.piece_is_checked("b"):
-                        value = minimax(next_board, depth - 1, -inf, inf, not maximizing)
-                        if value >= best_value_root:
-                            best_value_root = value
-                            maxed_move_root = (piece_1.row, piece_1.col), (move_1[0], move_1[1])
-            return maxed_move_root
-
-        def minimax(board, depth, alpha, beta, maximizing):
-            if depth == 0:
-                return evaluate_board_advanced(board, "b")
-            new_board_1 = copy.deepcopy(board)
-            if maximizing:
-                all_pieces_1 = get_all_pieces(new_board_1, "b")
-                best_value_1 = -inf
-                for piece_1 in all_pieces_1:
-                    for move_1 in piece_1.move_list:
-                        new_board_1 = copy.deepcopy(board)
-                        new_board_1.simple_move((piece_1.row, piece_1.col), (move_1[1], move_1[0]), color)
-                        best_value_1 = max(minimax(new_board_1, depth - 1, alpha, beta, not maximizing), best_value_1)
-                        alpha = max(alpha, best_value_1)
-                        if beta <= alpha:
-                            return best_value_1
-                return best_value_1
-            else:
-                all_pieces_1 = get_all_pieces(new_board_1, "w")
-                best_value_1 = inf
-                for piece_1 in all_pieces_1:
-                    for move_1 in piece_1.move_list:
-                        new_board_1 = copy.deepcopy(board)
-                        new_board_1.simple_move((piece_1.row, piece_1.col), (move_1[1], move_1[0]), color)
-                        best_value_1 = min(minimax(new_board_1, depth - 1, alpha, beta, not maximizing), best_value_1)
-                        beta = min(beta, best_value_1)
-                        if beta <= alpha:
-                            return best_value_1
-                return best_value_1
-
-        was_checked = self.board.piece_is_checked(color)
-        if was_checked:
-            all_pieces = get_all_pieces(self.board, color)
-            best_move = self.random_choice(color)
-            best_value = -inf
-            for piece in all_pieces:
-                for move in piece.move_list:
-                    new_board = copy.deepcopy(self.board)
-                    new_board.simple_move((piece.row, piece.col), (move[1], move[0]), color)
-                    if not new_board.piece_is_checked(color):
-                        if best_value == -inf:
-                            best_move = (piece.row, piece.col), (move[0], move[1])
-                            best_value = evaluate_board_advanced(new_board, color)
-                        elif evaluate_board_advanced(new_board, color) > best_value:
-                            best_move = (piece.row, piece.col), (move[0], move[1])
-                            best_value = evaluate_board_advanced(new_board, color)
-            return best_move
-        else:
-            best_move = root_minimax(self.board, 3, True)
-            return best_move
+TTEntry = namedtuple("TTEntry", ["value", "depth", "flag"])
+EXACT = 0
+LOWERBOUND = 1
+UPPERBOUND = 2
 
 
 def get_all_pieces(board, color):
@@ -213,3 +26,241 @@ def get_all_pieces(board, color):
                     if len(board.board[row][col].move_list) > 0:
                         all_pieces.append(board.board[row][col])
     return all_pieces
+
+
+def minimax(board, depth, alpha, beta, maximizing, tt=None, z_hash=None, root_color="b"):
+    if depth == 0:
+        return evaluate_board_advanced(board, root_color)
+    current_color = root_color if maximizing else ("w" if root_color == "b" else "b")
+    alpha_orig = alpha
+    beta_orig = beta
+
+    if tt is not None and z_hash is not None:
+        key = (z_hash, depth, maximizing)
+        entry = tt.get(key)
+        if entry is not None and entry.depth >= depth:
+            if entry.flag == EXACT:
+                return entry.value
+            elif entry.flag == LOWERBOUND:
+                alpha = max(alpha, entry.value)
+            elif entry.flag == UPPERBOUND:
+                beta = min(beta, entry.value)
+            if alpha >= beta:
+                return entry.value
+
+    candidates = []
+    pieces = get_all_pieces(board, current_color)
+    for piece in pieces:
+        for move in piece.move_list:
+            score = mvv_lva_score(board, (piece.row, piece.col), move)
+            candidates.append((score, (piece.row, piece.col), move))
+    candidates.sort(key=lambda x: x[0], reverse=True)
+    if maximizing:
+        best = -inf
+        for score, origin, move in candidates:
+            from_sq = origin[0] * 8 + origin[1]
+            to_sq = move[0] * 8 + move[1]
+            child_hash = None
+            if tt is not None and z_hash is not None:
+                child_hash = zobrist.hash_after_move(z_hash, board.board, from_sq, to_sq)
+            undo = board.make_move(origin, move, current_color)
+            if board.piece_is_checked(current_color):
+                board.undo_move(undo)
+                continue
+            value = minimax(board, depth - 1, alpha, beta, False, tt, child_hash, root_color)
+            board.undo_move(undo)
+            best = max(best, value)
+            alpha = max(alpha, best)
+            if beta <= alpha:
+                break
+        if tt is not None and z_hash is not None:
+            flag = EXACT
+            if best <= alpha_orig:
+                flag = UPPERBOUND
+            elif best >= beta_orig:
+                flag = LOWERBOUND
+            key = (z_hash, depth, maximizing)
+            tt[key] = TTEntry(best, depth, flag)
+            if len(tt) >= 1000000:
+                tt.clear()
+        return best
+    else:
+        best = inf
+        for score, origin, move in candidates:
+            from_sq = origin[0] * 8 + origin[1]
+            to_sq = move[0] * 8 + move[1]
+            child_hash = None
+            if tt is not None and z_hash is not None:
+                child_hash = zobrist.hash_after_move(z_hash, board.board, from_sq, to_sq)
+            undo = board.make_move(origin, move, current_color)
+            if board.piece_is_checked(current_color):
+                board.undo_move(undo)
+                continue
+            value = minimax(board, depth - 1, alpha, beta, True, tt, child_hash, root_color)
+            board.undo_move(undo)
+            best = min(best, value)
+            beta = min(beta, best)
+            if beta <= alpha:
+                break
+        if tt is not None and z_hash is not None:
+            flag = EXACT
+            if best <= alpha_orig:
+                flag = UPPERBOUND
+            elif best >= beta_orig:
+                flag = LOWERBOUND
+            key = (z_hash, depth, maximizing)
+            tt[key] = TTEntry(best, depth, flag)
+            if len(tt) >= 1000000:
+                tt.clear()
+        return best
+
+
+class Solution:
+    def __init__(self, board, color):
+        self.board = board
+        self.evaluation = evaluate_board(self.board, color)
+
+    # diff. 0 random choice
+    def random_choice(self, color):
+        all_moves = []
+        was_checked = self.board.piece_is_checked(color)
+        self.board.update_moves()
+        all_pieces = get_all_pieces(self.board, color)
+        for piece in all_pieces:
+            for move in piece.move_list:
+                origin = (piece.row, piece.col)
+                undo = self.board.make_move(origin, move, color)
+                still_checked = self.board.piece_is_checked(color)
+                self.board.undo_move(undo)
+                if was_checked:
+                    if not still_checked:
+                        return origin, move
+                else:
+                    if not still_checked:
+                        all_moves.append((origin, move))
+        if was_checked:
+            return -100
+        else:
+            if len(all_moves) <= 0:
+                return -100
+            logging.debug("Random choice: total moves: %d", len(all_moves))
+            return random.choice(all_moves)
+
+    # diff. 1 evaluation
+    def tier3_choice(self, color):
+        best_value = -inf
+        best_move = -1
+        was_checked = self.board.piece_is_checked(color)
+        all_pieces = get_all_pieces(self.board, color)
+        for piece in all_pieces:
+            for move in piece.move_list:
+                origin = (piece.row, piece.col)
+                undo = self.board.make_move(origin, move, color)
+                if not self.board.piece_is_checked(color):
+                    value = evaluate_board(self.board, color)
+                    if was_checked:
+                        if best_move == -1 or value > best_value:
+                            best_move = origin, move
+                            best_value = value
+                    else:
+                        if value > best_value:
+                            best_value = value
+                            best_move = origin, move
+                self.board.undo_move(undo)
+        if best_value == self.evaluation and not was_checked:
+            logging.debug("Eval. choice: all moves are equally evaluated, -> random choice")
+            return self.random_choice(color)
+        logging.debug("Eval. choice: the most arithmetically profitable move, has value of %d in comparison to %d",
+                      best_value, self.evaluation)
+        return best_move
+
+    # diff. 2 minimax depth 2, advanced evaluation
+    def tier2_choice(self, color):
+        was_checked = self.board.piece_is_checked(color)
+        if was_checked:
+            all_pieces = get_all_pieces(self.board, color)
+            best_move = self.random_choice(color)
+            best_value = -inf
+            for piece in all_pieces:
+                for move in piece.move_list:
+                    origin = (piece.row, piece.col)
+                    undo = self.board.make_move(origin, move, color)
+                    if not self.board.piece_is_checked(color):
+                        value = evaluate_board_advanced(self.board, color)
+                        if best_value == -inf or value > best_value:
+                            best_move = origin, move
+                            best_value = value
+                    self.board.undo_move(undo)
+            return best_move
+        else:
+            candidates = []
+            pieces = get_all_pieces(self.board, color)
+            for piece in pieces:
+                for move in piece.move_list:
+                    score = mvv_lva_score(self.board, (piece.row, piece.col), move)
+                    candidates.append((score, (piece.row, piece.col), move))
+            candidates.sort(key=lambda x: x[0], reverse=True)
+            best_value = -inf
+            best_move = self.random_choice(color)
+            tt = {}
+            root_hash = zobrist.hash_board(self.board.board)
+            for score, origin, move in candidates:
+                from_sq = origin[0] * 8 + origin[1]
+                to_sq = move[0] * 8 + move[1]
+                child_hash = zobrist.hash_after_move(root_hash, self.board.board, from_sq, to_sq)
+                undo = self.board.make_move(origin, move, color)
+                if not self.board.piece_is_checked(color):
+                    value = minimax(self.board, 1, -inf, inf, False, tt, child_hash, color)
+                    if value > best_value:
+                        best_value = value
+                        best_move = origin, move
+                self.board.undo_move(undo)
+            return best_move
+
+    # diff. 3 minimax depth 3, advanced evaluation
+    def tier1_choice(self, color):
+        was_checked = self.board.piece_is_checked(color)
+        if was_checked:
+            all_pieces = get_all_pieces(self.board, color)
+            best_move = self.random_choice(color)
+            best_value = -inf
+            for piece in all_pieces:
+                for move in piece.move_list:
+                    origin = (piece.row, piece.col)
+                    undo = self.board.make_move(origin, move, color)
+                    if not self.board.piece_is_checked(color):
+                        value = evaluate_board_advanced(self.board, color)
+                        if best_value == -inf or value > best_value:
+                            best_move = origin, move
+                            best_value = value
+                    self.board.undo_move(undo)
+            return best_move
+        else:
+            tt = {}
+            root_hash = zobrist.hash_board(self.board.board)
+            candidates = []
+            pieces = get_all_pieces(self.board, color)
+            for piece in pieces:
+                for move in piece.move_list:
+                    score = mvv_lva_score(self.board, (piece.row, piece.col), move)
+                    candidates.append((score, (piece.row, piece.col), move))
+            candidates.sort(key=lambda x: x[0], reverse=True)
+            best_value = -inf
+            best_move = self.random_choice(color)
+            alpha = -inf
+            beta = inf
+            for score, origin, move in candidates:
+                from_sq = origin[0] * 8 + origin[1]
+                to_sq = move[0] * 8 + move[1]
+                child_hash = zobrist.hash_after_move(root_hash, self.board.board, from_sq, to_sq)
+                undo = self.board.make_move(origin, move, color)
+                if not self.board.piece_is_checked(color):
+                    value = minimax(self.board, 2, alpha, beta, False, tt, child_hash, color)
+                    if value > best_value:
+                        best_value = value
+                        best_move = origin, move
+                    alpha = max(alpha, best_value)
+                self.board.undo_move(undo)
+                if beta <= alpha:
+                    break
+            return best_move
