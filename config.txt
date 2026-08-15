@@ -1,6 +1,6 @@
 [settings]
 game_mode=0
 difficulty=3
-visual_set=1
+visual_set=0
 time_restriction=15
 freeze_time=3

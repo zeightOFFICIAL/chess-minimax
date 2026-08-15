@@ -10,7 +10,7 @@
 
 #### Saint Petersburg State University of Telecommunications
 
-![Python](https://img.shields.io/badge/python-3.9%20..%203.11-blue)
+![Python](https://img.shields.io/badge/python-3.11-blue)
 ![PyGame](https://img.shields.io/badge/pygame-2.6.1-green)
 ![License](https://img.shields.io/badge/license-GPL--2.0-lightgrey)
 
@@ -23,6 +23,8 @@
 ### Description
 
 The project was created to prove the applicability of the minimax method in game models. For this, work was carried out to formalize chess as a state space, to develop the game itself in Python, and to write an algorithm that plays it based on the minimax decision-making method. The algorithm uses board weighting and the alpha-beta pruning optimization, on top of that it reorders moves before searching them and remembers already evaluated positions in a transposition table.
+
+The coursework papers and the older Russian version of this readme are kept in `docs/`.
 
 Everything is written from scratch, there is no chess library involved. The whole thing is about 2000 lines of Python. PyGame does the drawing, NumPy is used only to mirror the weighting tables for black, screeninfo reports the display size so the window fits the screen. Each optimization is a separate layer over plain minimax, so the effect of every one of them can be measured separately, and the measurements are given below.
 
@@ -114,7 +116,7 @@ If the folder or any single file of it is missing, a warning is logged and the w
 
 ### Launch conditions
 
-Be sure to have the packages listed in requirements.txt installed. Python 3.9 to 3.11 is what the game is tested on. Use any IDE able to interpret Python code, or launch it from the console. Launch from main.py.
+Be sure to have the packages listed in requirements.txt installed. The game is developed and tested on Python 3.11, and the pinned NumPy asks for 3.11 or newer, so an older interpreter will fail already on the install step. Use any IDE able to interpret Python code, or launch it from the console. Launch from main.py.
 
 ```bash
 pip install -r requirements.txt
@@ -135,7 +137,7 @@ For configuration use config.txt, it is read once at startup. Anything that is m
 [settings]
 game_mode=0
 difficulty=3
-visual_set=1
+visual_set=0
 time_restriction=15
 freeze_time=3
 ```
