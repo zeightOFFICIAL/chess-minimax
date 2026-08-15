@@ -3,8 +3,6 @@ PyChess with minimax AI
 Copyright (C) 2023 Artemii Saganenko, Alexander Kuksin
 """
 
-from numpy import flipud
-
 # Piece-square tables (white's perspective, row 0 = rank 8)
 _PAWN_TABLE = [
     [0, 0, 0, 0, 0, 0, 0, 0],
@@ -71,7 +69,7 @@ _KING_TABLE = [
 _MATERIAL = [330, 20000, 320, 100, 900, 500]
 
 _WHITE_TABLES = [_BISHOP_TABLE, _KING_TABLE, _KNIGHT_TABLE, _PAWN_TABLE, _QUEEN_TABLE, _ROOK_TABLE]
-_BLACK_TABLES = [flipud(t) for t in _WHITE_TABLES]
+_BLACK_TABLES = [t[::-1] for t in _WHITE_TABLES]
 
 
 def evaluate_board_advanced(board, color):
